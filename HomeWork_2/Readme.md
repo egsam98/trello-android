@@ -10,5 +10,7 @@
 
 *Все экраны должны быть реализованны с помощью фрагментов. Также должно быть реализовано корректное поведение при перевороте экрана 
 
-<img src="https://gitlab.com/bakht.ergashev/androidtfs/blob/homwork2/HomeWork_2/Screenshot_20190930_163033_com.trello.jpg" width = "264" height = "464"/>
+![Список досок](https://gitlab.com/bakht.ergashev/androidtfs/blob/homwork2/HomeWork_2/Screenshot_20190930_163033_com.trello.jpg "Список досок")
+
+<img src="" width = "264" height = "464"/>
 <img src="https://gitlab.com/bakht.ergashev/androidtfs/blob/homwork2/HomeWork_2/Screenshot_20190930_163954_com.trello.jpg?raw=true" width = "264" height = "464"/>
