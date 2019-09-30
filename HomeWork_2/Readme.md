@@ -1,4 +1,3 @@
-
 ## Домашнее задание по лекции "Фрагменты"
 
 Первый шаг к созданию приложения Trello. Создать заготовку для приложения, которое впоследствии станет основой для вашего курсового проекта.
@@ -10,3 +9,6 @@
 
 
 *Все экраны должны быть реализованны с помощью фрагментов. Также должно быть реализовано корректное поведение при перевороте экрана 
+
+<img src="/Users/b.ergashev/StudioProjects/androidtfs/HomeWork_2/Screenshot_20190930_163033_com.trello.jpg?raw=true" width = "264" height = "464"/>
+<img src="https://github.com/warkiz/IndicatorSeekBar/blob/master/gif/discrete_1.gif?raw=true" width = "264" height = "464"/>
