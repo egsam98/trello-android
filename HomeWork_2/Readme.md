@@ -8,11 +8,7 @@
 - В правом нижнем углу кнопка + (создание доски): открывает диалог фрагмент с полем имя доски (см скрин). Так же есть кнопки "создать" и "отменить". При клике на "создать" - создаем и переходим в эту доску.
 
 
-*Все экраны должны быть реализованны с помощью фрагментов. Также должно быть реализовано корректное поведение при перевороте экрана 
+**Все экраны должны быть реализованны с помощью фрагментов. Также должно быть реализовано корректное поведение при перевороте экрана**
 
-![Список досок](Screenshot_20190930_163033_com.trello.jpg "Список досок")
-
-![Список досок|small](Screenshot_20190930_163033_com.trello.jpg.png)
-<img src="Screenshot_20190930_163033_com.trello.jpg.png"  width="264" height="464">
-
-<img src="https://gitlab.com/bakht.ergashev/androidtfs/blob/homwork2/HomeWork_2/Screenshot_20190930_163954_com.trello.jpg?raw=true" width = "264" height = "464"/>
+<img src="Screenshot_20190930_163033_com.trello.jpg" data-canonical-src="Screenshot_20190930_163033_com.trello.jpg" width="200" height="400" />
+<img src="Screenshot_20190930_163954_com.trello.jpg" data-canonical-src="Screenshot_20190930_163954_com.trello.jpg" width="200" height="400" />
