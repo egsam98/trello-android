@@ -20,7 +20,9 @@
 ### Порядок выполнения домашних заданий
 
 * [Делаете форк](https://gitlab.com/android-tfs-msk-mentors/androidtfs/-/forks/new) от главного проекта
-* В настройках репозитория (settings -> members -> invite group) предоставляете доступ к проекту группе android-nsk-spring-2019-mentors. Роль - developer.
+* В настройках репозитория (settings -> members -> invite group)
+  предоставляете доступ к проекту группе android-tfs-msk-mentors. Роль -
+  developer.
 
 - Если еще не ставили, то устанавливаете git и [настраиваете ssh](https://docs.gitlab.com/ce/ssh/README.html)
 - Клонируете форкнутрй репозиторий к себе на комп (git clone "адрес репозитория"), адрес репозитория можно посмотреть по нажатию на кнопку "Clone" на странице вашего проекта на гитлабе
