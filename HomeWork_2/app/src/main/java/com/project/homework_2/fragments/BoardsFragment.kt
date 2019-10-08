@@ -25,7 +25,7 @@ class BoardsFragment: Fragment() {
     private lateinit var presenter: BoardsPresenter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.boards, container, false)
+        inflater.inflate(R.layout.fragment_boards, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -19,7 +19,10 @@ class AddBoardDialogFragment: DialogFragment() {
     private var presenter: BoardsPresenter? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val view = TextInputEditText(context)
+        val view = TextInputEditText(context).apply {
+            hint = resources.getString(R.string.add_board_title_hint)
+        }
+
         return with(AlertDialog.Builder(context!!)) {
             setTitle(R.string.add_board_title)
             setView(view)

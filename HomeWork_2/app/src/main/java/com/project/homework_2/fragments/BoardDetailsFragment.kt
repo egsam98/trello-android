@@ -15,7 +15,7 @@ import com.project.homework_2.R
 class BoardDetailsFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.board_details, container, false)
+        inflater.inflate(R.layout.fragment_board_details, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         view.findViewById<TextView>(R.id.title).text = arguments?.getString("title")
