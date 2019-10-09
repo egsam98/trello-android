@@ -1,8 +1,8 @@
 package com.project.homework_2.activities
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.project.homework_2.R
 import com.project.homework_2.fragments.BoardDetailsFragment
 import com.project.homework_2.fragments.BoardsFragment

@@ -2,9 +2,9 @@ package com.project.homework_2.fragments
 
 import android.app.Dialog
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.design.widget.TextInputEditText
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
+import com.google.android.material.textfield.TextInputEditText
 import com.project.homework_2.R
 import com.project.homework_2.activities.MainActivity
 import com.project.homework_2.presenters.BoardsPresenter

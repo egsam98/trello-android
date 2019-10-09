@@ -1,12 +1,12 @@
 package com.project.homework_2.adapters
 
 import android.graphics.Bitmap
-import android.support.design.widget.FloatingActionButton
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.project.homework_2.R
 import com.project.homework_2.presenters.BoardsPresenter
 
