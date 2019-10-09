@@ -1,34 +1,43 @@
 package com.project.homework_2.fragments
 
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.design.widget.TextInputEditText
 import android.support.v7.app.AlertDialog
 import com.project.homework_2.R
 import com.project.homework_2.activities.MainActivity
-import com.project.homework_2.presenters.BoardsPresenter
 
 
 /**
  * Диалоговое окно создания новой доски
- * @property presenter BoardsPresenter?
+ * @property activity MainActivity?
  */
 class AddBoardDialogFragment: DialogFragment() {
 
-    private var presenter: BoardsPresenter? = null
+    private var activity: MainActivity? = null
+    private lateinit var textInput: TextInputEditText
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        if (context is MainActivity){
+            activity = context
+        }
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val view = TextInputEditText(context).apply {
+        textInput = TextInputEditText(activity).apply {
             hint = resources.getString(R.string.add_board_title_hint)
+            setText(savedInstanceState?.getCharSequence("input"))
         }
 
         return with(AlertDialog.Builder(context!!)) {
             setTitle(R.string.add_board_title)
-            setView(view)
+            setView(textInput)
             setPositiveButton("Создать") { _,_ ->
-                presenter?.let {
-                    it.addNew(view.text.toString())
+                activity?.let {
+                    it.presenter.addNew(textInput.text.toString())
                     dismiss()
                 }
             }
@@ -37,8 +46,8 @@ class AddBoardDialogFragment: DialogFragment() {
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        presenter = (activity as MainActivity).presenter
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putCharSequence("input", textInput.text)
     }
 }
