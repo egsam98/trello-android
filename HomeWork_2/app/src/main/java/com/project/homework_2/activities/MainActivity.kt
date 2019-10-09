@@ -11,15 +11,11 @@ import com.project.homework_2.presenters.BoardsPresenter
 
 class MainActivity : AppCompatActivity(), BoardsPresenter.IView {
 
-    lateinit var presenter: BoardsPresenter
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        presenter = BoardsPresenter(this).apply {
-            load(this@MainActivity)
-        }
+        BoardsPresenter.init(this)
 
         if (savedInstanceState == null) {
             supportFragmentManager

@@ -12,18 +12,19 @@ import kotlin.random.Random
  * @property boardsView IView
  * @property boards ArrayList<Board>
  */
-class BoardsPresenter(private val boardsView: IView) {
+object BoardsPresenter {
 
-    companion object {
-        /**
-         * Файл с данным названием хранится в InternalStorage
-         */
-        private const val BOARDS_FILENAME = "boards.bin"
-    }
+    /**
+     * Файл с данным названием хранится в InternalStorage
+     */
+    private const val BOARDS_FILENAME = "boards.bin"
 
     var boards: ArrayList<Board> = arrayListOf()
+        private set
 
-    fun load(context: Context) {
+    var boardsView: IView? = null
+
+    private fun load(context: Context) {
         try {
             val fis = context.openFileInput(BOARDS_FILENAME)
             ObjectInputStream(fis).use {
@@ -34,6 +35,12 @@ class BoardsPresenter(private val boardsView: IView) {
         }
     }
 
+    fun init(context: Context) {
+        load(context)
+        if (context is IView)
+            boardsView = context
+    }
+
     fun save(context: Context) {
         ObjectOutputStream(context.openFileOutput(BOARDS_FILENAME, Context.MODE_PRIVATE)).use {
             it.writeObject(boards)
@@ -42,11 +49,11 @@ class BoardsPresenter(private val boardsView: IView) {
 
     fun addNew(title: String) {
         if (title.isBlank()) {
-            boardsView.showError("Название новой доски не должно быть пустым")
+            boardsView?.showError("Название новой доски не должно быть пустым")
             return
         }
         boards.add(Board(title, randomColorId()))
-        boardsView.showDetails(title)
+        boardsView?.showDetails(title)
     }
 
     fun removeAt(pos: Int) {
@@ -56,7 +63,7 @@ class BoardsPresenter(private val boardsView: IView) {
 
     fun onClick(pos: Int) {
         if (pos >= 0 && pos < boards.size)
-            boardsView.showDetails(boards[pos].title)
+            boardsView?.showDetails(boards[pos].title)
     }
 
     private fun randomColorId(): Int {
