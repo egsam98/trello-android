@@ -45,7 +45,7 @@ class BoardsAdapter: RecyclerView.Adapter<BoardsAdapter.BoardsViewHolder>() {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, p1: Int): BoardsViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.board_view, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.board_list_item, parent, false)
         return BoardsViewHolder(view)
     }
 

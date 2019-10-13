@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.textfield.TextInputEditText
 import com.project.homework_2.R
+import com.project.homework_2.models.Board
 import com.project.homework_2.presenters.BoardsPresenter
 
 
@@ -27,7 +28,7 @@ class AddBoardDialogFragment: DialogFragment() {
             setTitle(R.string.add_board_title)
             setView(textInput)
             setPositiveButton("Создать") { _,_ ->
-                BoardsPresenter.addNew(textInput.text.toString())
+                BoardsPresenter.add(Board(textInput.text.toString()))
                 dismiss()
             }
             setNegativeButton("Отмена", null)
