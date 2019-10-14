@@ -10,6 +10,8 @@ import com.project.homework_2.models.Task
  */
 class TasksPresenter(val tasks: MutableList<Task>, var iView: IView? = null): IListPresenter<Task> {
 
+    private var currentTaskDragging: Task? = null
+
     override fun add(task: Task) {
         tasks.add(task)
         iView?.onTasksChange()
@@ -22,7 +24,18 @@ class TasksPresenter(val tasks: MutableList<Task>, var iView: IView? = null): IL
         iView?.onTasksChange()
     }
 
+    fun onItemDragStarted(pos: Int) {
+        currentTaskDragging = tasks[pos]
+    }
+
+    fun onItemDragEnded() = currentTaskDragging?.let {
+        tasks.remove(it)
+        iView?.onTasksChange()
+        currentTaskDragging = null
+    }
+
     interface IView {
+        fun getPresenter(): TasksPresenter
         fun onTasksChange()
     }
 }
