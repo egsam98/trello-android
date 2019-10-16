@@ -14,7 +14,7 @@ import com.project.homework_2.presenters.TasksPresenter
  * @property presenter TasksPresenter
  */
 class TasksAdapter(private val presenter: TasksPresenter):
-    DragItemAdapter<Task, TasksAdapter.TaskViewHolder>(), TasksPresenter.IView {
+    DragItemAdapter<Task, TasksAdapter.TaskViewHolder>(), TasksPresenter.IAdapter {
 
     class TaskViewHolder(val view: TextView): DragItemAdapter.ViewHolder(view, R.id.task, true)
 

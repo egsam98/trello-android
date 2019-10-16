@@ -38,17 +38,15 @@ class TasksFragment: Fragment() {
         }
 
         override fun onEndDragAnimation(dragView: View) {
-            val lowerBorder = boardView.height - bucket.height - dragView.height
-
-            if (dragView.y > lowerBorder) {
-                val currentColumn = boardView.focusedColumn
-                val adapter = boardView.getAdapter(currentColumn)
-                if (adapter is TasksPresenter.IView) {
+            TasksPresenter.currentTaskId?.let {
+                val lowerBorder = boardView.height - bucket.height - dragView.height
+                if (dragView.y > lowerBorder) {
                     dragView.visibility = View.GONE
-                    adapter.getPresenter().onItemDragEnded()
+                    boardView.removeFromAllColumnsById(it)
                 }
             }
 
+            TasksPresenter.onItemDragEnded()
             bucket.visibility = View.GONE
         }
     }
@@ -65,8 +63,8 @@ class TasksFragment: Fragment() {
             setBoardListener(object: BoardView.BoardListenerAdapter() {
                 override fun onItemDragStarted(column: Int, row: Int) {
                     val adapter = this@apply.getAdapter(column)
-                    if (adapter is TasksPresenter.IView) {
-                        adapter.getPresenter().onItemDragStarted(row)
+                    if (adapter is TasksPresenter.IAdapter) {
+                        adapter.getPresenter().onItemDragStarted(column, row)
                     }
                 }
             })
@@ -77,7 +75,7 @@ class TasksFragment: Fragment() {
         for (column in selectedBoard.columns) {
             val presenter = TasksPresenter(column.tasks)
             val tasksAdapter = TasksAdapter(presenter)
-            presenter.iView = tasksAdapter
+            presenter.adapter = tasksAdapter
 
             val headerView = LayoutInflater.from(context).inflate(R.layout.task_list_header, null)
                 .apply {
@@ -96,5 +94,11 @@ class TasksFragment: Fragment() {
     override fun onPause() {
         super.onPause()
         BoardsPresenter.save(context!!)
+    }
+
+    private fun BoardView.removeFromAllColumnsById(id: Long) {
+        (0 until columnCount)
+            .map { (getAdapter(it) as TasksAdapter).getPresenter() }
+            .forEach { it.removeById(id) }
     }
 }

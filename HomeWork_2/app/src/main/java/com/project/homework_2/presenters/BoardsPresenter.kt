@@ -1,7 +1,6 @@
 package com.project.homework_2.presenters
 
 import android.content.Context
-import android.os.Handler
 import com.project.homework_2.models.Board
 import java.io.*
 import java.lang.Exception
@@ -9,10 +8,10 @@ import java.lang.Exception
 
 /**
  * Презентер для манипуляций над списком досок
- * @property boardsView IView
+ * @property boardsView IAdapter
  * @property boards ArrayList<Board>
  */
-object BoardsPresenter: IListPresenter<Board> {
+object BoardsPresenter {
 
     /**
      * Файл с данным названием хранится в InternalStorage
@@ -47,7 +46,7 @@ object BoardsPresenter: IListPresenter<Board> {
         }
     }
 
-    override fun add(board: Board) {
+    fun add(board: Board) {
         if (board.title.isBlank()) {
             boardsView?.showError("Название новой доски не должно быть пустым")
             return
@@ -58,7 +57,7 @@ object BoardsPresenter: IListPresenter<Board> {
         }
     }
 
-    override fun removeAt(pos: Int) {
+    fun removeAt(pos: Int) {
         if (pos >= 0 && pos < boards.size)
             boards.removeAt(pos)
     }

@@ -3,38 +3,44 @@ package com.project.homework_2.presenters
 import com.project.homework_2.models.Task
 
 /**
- * Презентер для манипуляций над списком задач для каждой колонки по отдельно
+ * Презентер для манипуляций над списком задач для каждой колонки отдельно
  * @see com.project.homework_2.fragments.TasksFragment BoardView
  * @property tasks MutableList<Task>
- * @property iView IView?
+ * @property adapter IAdapter?
  */
-class TasksPresenter(val tasks: MutableList<Task>, var iView: IView? = null): IListPresenter<Task> {
+class TasksPresenter(val tasks: MutableList<Task>) {
 
-    private var currentTaskDragging: Task? = null
+    companion object {
+        var focusedColumnInd: Int = -1
+        private set
 
-    override fun add(task: Task) {
-        tasks.add(task)
-        iView?.onTasksChange()
-    }
+        var currentTaskId: Long? = null
+        private set
 
-    override fun removeAt(pos: Int) {
-        if (pos >= 0 && pos < tasks.size) {
-            tasks.removeAt(pos)
+        fun onItemDragEnded() {
+            currentTaskId = null
+            focusedColumnInd = -1
         }
-        iView?.onTasksChange()
     }
 
-    fun onItemDragStarted(pos: Int) {
-        currentTaskDragging = tasks[pos]
+    var adapter: IAdapter? = null
+
+    fun add(task: Task) {
+        tasks.add(task)
+        adapter?.onTasksChange()
     }
 
-    fun onItemDragEnded() = currentTaskDragging?.let {
-        tasks.remove(it)
-        iView?.onTasksChange()
-        currentTaskDragging = null
+    fun onItemDragStarted(columnInd: Int, pos: Int) {
+        currentTaskId = tasks[pos].id
+        focusedColumnInd = columnInd
     }
 
-    interface IView {
+    fun removeById(id: Long) {
+        tasks.removeAll { it.id == id }
+        adapter?.onTasksChange()
+    }
+
+    interface IAdapter{
         fun getPresenter(): TasksPresenter
         fun onTasksChange()
     }
