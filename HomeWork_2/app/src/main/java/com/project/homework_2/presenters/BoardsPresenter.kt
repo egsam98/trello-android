@@ -1,37 +1,43 @@
 package com.project.homework_2.presenters
 
 import android.content.Context
-import android.graphics.Color
 import com.project.homework_2.models.Board
 import java.io.*
-import kotlin.random.Random
+import java.lang.Exception
 
 
 /**
  * Презентер для манипуляций над списком досок
- * @property boardsView IView
+ * @property boardsView IAdapter
  * @property boards ArrayList<Board>
  */
-class BoardsPresenter(private val boardsView: IView) {
+object BoardsPresenter {
 
-    companion object {
-        /**
-         * Файл с данным названием хранится в InternalStorage
-         */
-        private const val BOARDS_FILENAME = "boards.bin"
-    }
+    /**
+     * Файл с данным названием хранится в InternalStorage
+     */
+    private const val BOARDS_FILENAME = "boards.bin"
 
-    var boards: ArrayList<Board> = arrayListOf()
+    var boards = mutableListOf<Board>()
+        private set
 
-    fun load(context: Context) {
+    var boardsView: IView? = null
+
+    private fun load(context: Context) {
         try {
             val fis = context.openFileInput(BOARDS_FILENAME)
             ObjectInputStream(fis).use {
-                boards = it.readObject() as ArrayList<Board>
+                boards = it.readObject() as MutableList<Board>
             }
-        } catch (e: FileNotFoundException) {
+        } catch (e: Exception) {
             // Иначе пустой список
         }
+    }
+
+    fun init(context: Context) {
+        load(context)
+        if (context is IView)
+            boardsView = context
     }
 
     fun save(context: Context) {
@@ -40,13 +46,15 @@ class BoardsPresenter(private val boardsView: IView) {
         }
     }
 
-    fun addNew(title: String) {
-        if (title.isBlank()) {
-            boardsView.showError("Название новой доски не должно быть пустым")
+    fun add(board: Board) {
+        if (board.title.isBlank()) {
+            boardsView?.showError("Название новой доски не должно быть пустым")
             return
         }
-        boards.add(Board(title, randomColorId()))
-        boardsView.showDetails(title)
+        with(board){
+            boards.add(this)
+            boardsView?.showTasks(this)
+        }
     }
 
     fun removeAt(pos: Int) {
@@ -56,12 +64,7 @@ class BoardsPresenter(private val boardsView: IView) {
 
     fun onClick(pos: Int) {
         if (pos >= 0 && pos < boards.size)
-            boardsView.showDetails(boards[pos].title)
-    }
-
-    private fun randomColorId(): Int {
-        val (one, two, three) = IntArray(3) { Random.nextInt(256) }
-        return Color.rgb(one, two, three)
+            boardsView?.showTasks(boards[pos])
     }
 
     /**
@@ -69,10 +72,10 @@ class BoardsPresenter(private val boardsView: IView) {
      */
     interface IView {
         /**
-         * Отобразить детальную информацию по выбранной на UI доске
-         * @param title String
+         * Отобразить список задач по выбранной на UI доске
+         * @param board Board
          */
-        fun showDetails(title: String)
+        fun showTasks(board: Board)
 
         /**
          * Сообщение об ошибке
