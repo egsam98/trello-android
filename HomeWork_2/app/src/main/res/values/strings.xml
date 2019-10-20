@@ -1,6 +1,0 @@
-<resources>
-    <string name="app_name">HomeWork_2</string>
-    <string name="add_board_title">Создать доску</string>
-    <string name="add_board_title_hint">Название доски</string>
-    <string name="participants">Участники</string>
-</resources>
