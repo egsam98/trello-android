@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import androidx.fragment.app.ListFragment
 import com.project.trello_fintech.presenters.UsersPresenter
-import com.project.homework_2.R
+import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.UsersAdapter
 
 

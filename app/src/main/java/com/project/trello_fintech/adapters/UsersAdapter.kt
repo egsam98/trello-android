@@ -7,13 +7,13 @@ import android.widget.ArrayAdapter
 import com.project.trello_fintech.models.User
 import android.view.LayoutInflater
 import android.widget.TextView
-import com.project.homework_2.R
+import com.project.trello_fintech.R
 import com.project.trello_fintech.views.AvatarView
 
 
 /**
  * Адаптер для списка пользователей
- * @see com.project.homework_2.fragments.UsersFragment
+ * @see com.project.trello_fintech.fragments.UsersFragment
  * @property cxt Context
  * @property layoutId Int
  */

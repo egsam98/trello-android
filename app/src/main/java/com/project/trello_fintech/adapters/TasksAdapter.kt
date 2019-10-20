@@ -3,14 +3,14 @@ package com.project.trello_fintech.adapters
 import android.view.*
 import android.widget.TextView
 import com.woxthebox.draglistview.DragItemAdapter
-import com.project.homework_2.R
+import com.project.trello_fintech.R
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.presenters.TasksPresenter
 
 
 /**
  * Адаптер списка задач
- * @see com.project.homework_2.fragments.TasksFragment
+ * @see com.project.trello_fintech.fragments.TasksFragment
  * @property presenter TasksPresenter
  */
 class TasksAdapter(private val presenter: TasksPresenter):

@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.project.homework_2.R
+import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.BoardsAdapter
 import com.project.trello_fintech.presenters.BoardsPresenter
 

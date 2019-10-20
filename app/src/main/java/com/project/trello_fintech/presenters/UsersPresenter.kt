@@ -2,7 +2,7 @@ package com.project.trello_fintech.presenters
 
 import android.content.Context
 import android.graphics.BitmapFactory
-import com.project.homework_2.R
+import com.project.trello_fintech.R
 import com.project.trello_fintech.models.User
 
 

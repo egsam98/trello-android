@@ -7,7 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import com.project.homework_2.R
+import com.project.trello_fintech.R
 import com.project.trello_fintech.fragments.TasksFragment
 import com.project.trello_fintech.fragments.BoardsFragment
 import com.project.trello_fintech.models.Board

@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.project.homework_2.R
+import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.TasksAdapter
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.Task
