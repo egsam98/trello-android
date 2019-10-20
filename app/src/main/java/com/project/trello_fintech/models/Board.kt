@@ -8,22 +8,17 @@ import kotlin.random.Random
 /**
  * Модель "доска"
  * @property title String - название
+ * @property category Board.Category - категория доски (используется для группировки)
  * @property color Int - идентификатор цвета
  * @property columns MutableList<String> - список колонок, содержащих задачи
  * @see Column
  */
-data class Board(val title: String, val category: Category, val color: Int = randomColorId()): Serializable {
+data class Board(val title: String, var category: Category, val color: Int = randomColorId()): Serializable, IListItem() {
 
-    enum class Category {
-        PERSONAL_BOARDS {
-            override fun toString() = "Personal boards"
-        },
-        WORK_BOARDS {
-            override fun toString() = "Work boards"
-        },
-        OTHER_BOARDS {
-            override fun toString() = "Other boards"
-        }
+    data class Category(private val title: String): IListItem(), Serializable, Comparable<Category> {
+        override fun getType() = HEADER
+        override fun toString() = title
+        override fun compareTo(other: Category) = title.compareTo(other.title)
     }
 
     val columns = mutableListOf(
@@ -31,6 +26,8 @@ data class Board(val title: String, val category: Category, val color: Int = ran
         Column("IN PROGRESS"),
         Column("DONE")
     )
+
+    override fun getType() = BODY
 }
 
 private fun randomColorId(): Int {
