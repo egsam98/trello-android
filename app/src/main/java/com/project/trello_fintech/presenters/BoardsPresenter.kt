@@ -67,6 +67,8 @@ object BoardsPresenter {
             boardsView?.showTasks(boards[pos])
     }
 
+    fun getAllCategories() = Board.Category.values()
+
     /**
      * Интерфейс, который Activity/Fragment должен реализовать для взаимодействия с презентером
      */

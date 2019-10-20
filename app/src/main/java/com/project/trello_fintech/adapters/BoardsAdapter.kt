@@ -26,7 +26,7 @@ class BoardsAdapter: RecyclerView.Adapter<BoardsAdapter.BoardsViewHolder>() {
     private val data = BoardsPresenter.boards
 
     override fun onBindViewHolder(holder: BoardsViewHolder, pos: Int) {
-        val (title, color) = data[pos]
+        val (title, _, color) = data[pos]
 
         with(holder) {
             textView.text = title

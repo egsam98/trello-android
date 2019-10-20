@@ -12,7 +12,20 @@ import kotlin.random.Random
  * @property columns MutableList<String> - список колонок, содержащих задачи
  * @see Column
  */
-data class Board(val title: String, val color: Int = randomColorId()): Serializable {
+data class Board(val title: String, val category: Category, val color: Int = randomColorId()): Serializable {
+
+    enum class Category {
+        PERSONAL_BOARDS {
+            override fun toString() = "Personal boards"
+        },
+        WORK_BOARDS {
+            override fun toString() = "Work boards"
+        },
+        OTHER_BOARDS {
+            override fun toString() = "Other boards"
+        }
+    }
+
     val columns = mutableListOf(
         Column("TO DO"),
         Column("IN PROGRESS"),
