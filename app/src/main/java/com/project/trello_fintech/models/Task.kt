@@ -1,7 +1,7 @@
 package com.project.trello_fintech.models
 
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import java.util.*
 import kotlin.random.Random
 
 /**
@@ -9,9 +9,10 @@ import kotlin.random.Random
  * @property text String
  * @property id Long
  */
-data class Task(val text: String = randomString()): Serializable {
-    val id: Long = Calendar.getInstance().timeInMillis
-}
+data class Task(
+        @SerializedName("name") val text: String = randomString(),
+        @SerializedName("id") val id: String = ""
+    ): Serializable
 
 private fun randomString(): String {
     val charPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

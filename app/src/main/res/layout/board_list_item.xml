@@ -17,6 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:paddingStart="15dp"
+            android:paddingEnd="15dp"
             android:gravity="center"
             android:id="@+id/title" app:layout_constraintStart_toEndOf="@+id/image"
             android:layout_marginBottom="8dp"

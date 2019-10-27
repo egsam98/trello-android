@@ -1,36 +1,66 @@
 package com.project.trello_fintech.models
 
+import android.graphics.Bitmap
 import android.graphics.Color
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import kotlin.random.Random
 
 
 /**
  * Модель "доска"
- * @property title String - название
- * @property category Board.Category - категория доски (используется для группировки)
- * @property color Int - идентификатор цвета
- * @property columns MutableList<String> - список колонок, содержащих задачи
- * @see Column
+ * @property title String название
+ * @property category Category? категория доски (используется для группировки)
+ * @property id String
+ * @property columns List<Column> список колонок, содержащих задачи
+ * @property prefs Prefs? Preferences доски
  */
-data class Board(val title: String, var category: Category, val color: Int = randomColorId()): Serializable, IListItem() {
+data class Board(
+    @SerializedName("name") val title: String,
+    @SerializedName("organization") var category: Category?
+    ): Serializable, IListItem {
 
-    data class Category(private val title: String): IListItem(), Serializable, Comparable<Category> {
-        override fun getType() = HEADER
+    @SerializedName("id")
+    val id: String = ""
+
+    var columns: List<Column> = listOf()
+
+    @SerializedName("prefs")
+    val prefs: Prefs? = null
+
+    override fun getType() = IListItem.BODY
+
+
+    data class Category(
+        @SerializedName("displayName") private val title: String
+    ): IListItem, Serializable, Comparable<Category> {
+
+        companion object {
+            fun default() = Category(title = "Персональные доски")
+        }
+
+        @SerializedName("id")
+        val id: String = ""
+
+        override fun getType() = IListItem.HEADER
         override fun toString() = title
         override fun compareTo(other: Category) = title.compareTo(other.title)
     }
 
-    val columns = mutableListOf(
-        Column("TO DO"),
-        Column("IN PROGRESS"),
-        Column("DONE")
-    )
+    /**
+     * Preferences для доски
+     * @property hexColor String фоновый цвет доски
+     * @property imageUrls Array<ImageUrl>? ссылки на фоновые изображения доски (различные размеры)
+     * @constructor
+     */
+    data class Prefs(
+        @SerializedName("backgroundColor") val hexColor: String,
+        @SerializedName("backgroundImageScaled") val imageUrls: Array<ImageUrl>?
+    ): Serializable {
 
-    override fun getType() = BODY
-}
+        data class ImageUrl(@SerializedName("url") val url: String): Serializable
 
-private fun randomColorId(): Int {
-    val (one, two, three) = IntArray(3) { Random.nextInt(256) }
-    return Color.rgb(one, two, three)
+        fun fromHexColor(): Bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(Color.parseColor(hexColor))
+        }
+    }
 }

@@ -1,15 +1,22 @@
 package com.project.trello_fintech.presenters
 
-import android.content.Context
+import com.project.trello_fintech.api.BoardApi
+import com.project.trello_fintech.api.RetrofitClient
+import com.project.trello_fintech.api.CategoryApi
+import com.project.trello_fintech.api.ColumnApi
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.IListItem
 import com.project.trello_fintech.models.NothingListItem
 import com.project.trello_fintech.utils.LiveList
 import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
-import java.io.*
-import java.lang.Exception
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.cast
 
+
+/**
+ * Возможные фоновые цвета доски
+ */
+private val COLORS = arrayOf("blue", "orange", "green", "red", "purple", "pink", "lime", "sky", "grey")
 
 /**
  * Презентер для манипуляций над списком досок
@@ -21,24 +28,27 @@ import java.lang.Exception
  */
 object BoardsPresenter {
 
-    /**
-     * Файл с данным названием хранится в InternalStorage
-     */
-    private const val BOARDS_FILENAME = "boards.bin"
+    private val boardRetrofit = RetrofitClient.create<BoardApi>()
+    private val categoryRetrofit = RetrofitClient.create<CategoryApi>()
+
     private var boards = LiveList<Board>()
-    private var listItems = listOf<IListItem>()
+    var listItems = listOf<IListItem>()
+        private set
 
     var boardsView: IView? = null
 
     fun observe(): Observable<Pair<List<IListItem>, List<IListItem>>> = boards
         .observe()
-        .subscribeOn(Schedulers.computation())
         .map { boards ->
+            for (board in boards) {
+                if (board.category == null)
+                    board.category = Board.Category.default()
+            }
             val before = listItems.toList()
             listItems =
                 if (boards.isNotEmpty())
                     boards
-                        .groupBy { it.category }
+                        .groupBy { it.category!! }
                         .toSortedMap()
                         .flatMap { (key, boards) ->
                             mutableListOf<IListItem>(key).apply { addAll(boards) }
@@ -48,27 +58,17 @@ object BoardsPresenter {
             Pair(before, listItems)
         }
 
-    private fun load(context: Context) {
-        try {
-            val fis = context.openFileInput(BOARDS_FILENAME)
-            ObjectInputStream(fis).use {
-                boards.data = it.readObject() as MutableList<Board>
+    private fun load() {
+        boardRetrofit.findAll()
+            .cast<MutableList<Board>>()
+            .subscribe {
+                boards.data = it
             }
-        } catch (e: Exception) {
-            // Иначе пустой список
-        }
     }
 
-    fun init(context: Context) {
-        load(context)
-        if (context is IView)
-            boardsView = context
-    }
-
-    fun save(context: Context) {
-        ObjectOutputStream(context.openFileOutput(BOARDS_FILENAME, Context.MODE_PRIVATE)).use {
-            it.writeObject(boards.data)
-        }
+    fun init(mvpView: IView) {
+        boardsView = mvpView
+        load()
     }
 
     fun add(board: Board) {
@@ -76,32 +76,44 @@ object BoardsPresenter {
             boardsView?.showError("Название новой доски не должно быть пустым")
             return
         }
-        with(board) {
-            boards add board
-            boardsView?.showTasks(this)
+        board.category?.let { category ->
+            boardRetrofit.create(board, category.id, COLORS.random())
+                .subscribe {
+                    it.category = category
+                    boards add it
+                    onClick(it)
+                }
         }
     }
 
     fun remove(board: Board) {
+        boardRetrofit.delete(board.id).subscribe()
         boards remove board
     }
 
     fun move(source: Board, target: Board) {
         boards.data.find(source::equals)?.let {
-            it.category = target.category
+            val targetCategory = target.category
+            if (targetCategory != null && it.category != targetCategory) {
+                boardRetrofit.update(it, idOrg = targetCategory.id).subscribe()
+                it.category = targetCategory
+            }
             boards.move(source, target)
         }
     }
 
     fun onClick(board: Board) {
-        boardsView?.showTasks(board)
+        val retrofit = RetrofitClient.create<ColumnApi>()
+        retrofit.findAllByBoardId(board.id)
+            .subscribe {
+                board.columns = it
+                boardsView?.showTasks(board)
+            }
     }
 
-    fun getAllCategories() = arrayOf(
-        Board.Category("Personal boards"),
-        Board.Category("Work boards"),
-        Board.Category("Other")
-    )
+    fun getAllCategories() = categoryRetrofit.findAllAvailable()
+        .map { it.toMutableList().apply { add(0, Board.Category.default()) } }
+        .observeOn(AndroidSchedulers.mainThread())
 
     /**
      * Интерфейс, который Activity/Fragment должен реализовать для взаимодействия с презентером
@@ -117,6 +129,8 @@ object BoardsPresenter {
          * Сообщение об ошибке
          * @param message String
          */
-        fun showError(message: String)
+        fun showError(message: String, code: Int? = null)
+
+        fun openWebViewForToken()
     }
 }

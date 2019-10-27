@@ -1,12 +1,14 @@
 package com.project.trello_fintech.adapters
 
-import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.project.trello_fintech.R
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.IListItem
@@ -61,16 +63,22 @@ object BoardStrategy: ViewHolderStrategy {
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, item: IListItem) {
-        val (title, _, color) = item as Board
-
         with(holder as ViewHolder) {
-            board = item
-            textView.text = title
-            val coloredImage = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888).apply {
-                eraseColor(color)
+            board = item as Board
+            textView.text = board.title
+            val prefs = board.prefs
+
+            if (prefs != null) {
+                Glide.with(view.context)
+                    .asBitmap()
+                    .load(prefs.imageUrls?.first()?.url?: prefs.fromHexColor())
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .apply(RequestOptions().override(100, 100))
+                    .into(imageView)
             }
-            imageView.setImageBitmap(coloredImage)
-            view.setOnClickListener { BoardsPresenter.onClick(item) }
+
+            view.setOnClickListener { BoardsPresenter.onClick(board) }
         }
     }
 }

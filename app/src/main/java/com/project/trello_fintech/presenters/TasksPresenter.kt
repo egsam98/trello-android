@@ -1,46 +1,73 @@
 package com.project.trello_fintech.presenters
 
+import com.project.trello_fintech.api.RetrofitClient
+import com.project.trello_fintech.api.TaskApi
+import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
+import com.project.trello_fintech.utils.LiveList
+import io.reactivex.rxkotlin.cast
+import java.io.Serializable
+
 
 /**
  * Презентер для манипуляций над списком задач для каждой колонки отдельно
- * @see com.project.homework_2.fragments.TasksFragment BoardView
+ * @see com.project.trello_fintech.fragments.TasksFragment BoardView
  * @property tasks MutableList<Task>
  * @property adapter IAdapter?
  */
-class TasksPresenter(val tasks: MutableList<Task>) {
+class TasksPresenter(column: Column) {
 
     companion object {
-        var focusedColumnInd: Int = -1
-        private set
-
-        var currentTaskId: Long? = null
-        private set
-
-        fun onItemDragEnded() {
-            currentTaskId = null
-            focusedColumnInd = -1
-        }
+        var currentTaskId: String? = null
+            private set
     }
+
+    private val columnId = column.id
+
+    val tasks = LiveList<Task>()
+
+    private val retrofit = RetrofitClient.create<TaskApi>()
 
     var adapter: IAdapter? = null
 
+    init {
+        retrofit.findAllByColumnId(column.id)
+            .cast<MutableList<Task>>()
+            .subscribe {
+                tasks.data = it
+                adapter?.onTasksChange()
+            }
+    }
+
+    fun observe() = tasks.observe()
+
     fun add(task: Task) {
-        tasks.add(task)
-        adapter?.onTasksChange()
+        retrofit.create(task, columnId).subscribe{
+            tasks.add(it)
+            adapter?.onTasksChange()
+        }
     }
 
-    fun onItemDragStarted(columnInd: Int, pos: Int) {
+    fun onItemDragStarted(pos: Int) {
         currentTaskId = tasks[pos].id
-        focusedColumnInd = columnInd
     }
 
-    fun removeById(id: Long) {
-        tasks.removeAll { it.id == id }
-        adapter?.onTasksChange()
+    fun onItemDragEnded(newPos: Int) {
+        tasks.data.find { it.id == currentTaskId }?.let {
+            retrofit.updateColumn(it.id, columnId, newPos.toString()).subscribe()
+        }
+        currentTaskId = null
     }
 
-    interface IAdapter{
+    fun removeById(id: String) {
+        tasks.data.find{ it.id == id }?.let {
+            retrofit.delete(id).subscribe()
+            tasks.remove(it)
+            adapter?.onTasksChange()
+        }
+    }
+
+    interface IAdapter {
         fun getPresenter(): TasksPresenter
         fun onTasksChange()
     }

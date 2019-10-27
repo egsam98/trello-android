@@ -21,6 +21,8 @@ class LiveList<T: Serializable> {
 
     fun observe() = observable
 
+    operator fun get(ind: Int) = data[ind]
+
     infix fun add(elem: T) {
         data.add(elem)
         observable.onNext(data)

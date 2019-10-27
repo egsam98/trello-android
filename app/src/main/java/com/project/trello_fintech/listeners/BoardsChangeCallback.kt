@@ -14,7 +14,7 @@ class BoardsChangeCallback(
     ): DiffUtil.Callback() {
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return before[oldItemPosition].id == after[newItemPosition].id
+        return before[oldItemPosition] === after[newItemPosition]
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {

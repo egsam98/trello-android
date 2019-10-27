@@ -6,6 +6,7 @@ import com.woxthebox.draglistview.DragItemAdapter
 import com.project.trello_fintech.R
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.presenters.TasksPresenter
+import java.io.Serializable
 
 
 /**
@@ -18,10 +19,6 @@ class TasksAdapter(private val presenter: TasksPresenter):
 
     class TaskViewHolder(val view: TextView): DragItemAdapter.ViewHolder(view, R.id.task, true)
 
-    init {
-        itemList = presenter.tasks
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.task_list_item, parent, false) as TextView
         return TaskViewHolder(view)
@@ -32,7 +29,7 @@ class TasksAdapter(private val presenter: TasksPresenter):
         holder.view.text = itemList[position].text
     }
 
-    override fun getUniqueItemId(position: Int) = itemList[position].id
+    override fun getUniqueItemId(position: Int) = itemList[position].id.hashCode().toLong()
 
     override fun onTasksChange() {
         notifyDataSetChanged()

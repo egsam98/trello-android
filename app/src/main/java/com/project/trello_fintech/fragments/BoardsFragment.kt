@@ -16,6 +16,7 @@ import com.project.trello_fintech.adapters.BoardsAdapter
 import com.project.trello_fintech.listeners.BoardTouchHelperCallback
 import com.project.trello_fintech.listeners.BoardsChangeCallback
 import com.project.trello_fintech.presenters.BoardsPresenter
+import com.project.trello_fintech.views.CircularProgressBar
 import io.reactivex.disposables.Disposable
 
 
@@ -33,12 +34,19 @@ class BoardsFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        BoardsPresenter.init(view.context as BoardsPresenter.IView)
+
+        val progressBar = view.findViewById<CircularProgressBar>(R.id.progressBar)
+
         val boardsAdapter = BoardsAdapter().apply {
-            dataSubscription = BoardsPresenter.observe().subscribe { (before, after) ->
-                data = after
-                val callback = BoardsChangeCallback(before, after)
-                DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
-            }
+            dataSubscription = BoardsPresenter.observe()
+                .doOnSubscribe { progressBar.loading() }
+                .doOnNext { progressBar.done() }
+                .subscribe { (before, after) ->
+                    data = after
+                    val callback = BoardsChangeCallback(before, after)
+                    DiffUtil.calculateDiff(callback).dispatchUpdatesTo(this)
+                }
         }
 
         activity?.let {
@@ -54,11 +62,6 @@ class BoardsFragment: Fragment() {
         }
 
         (activity as AppCompatActivity).supportActionBar?.title = "Доски"
-    }
-
-    override fun onPause() {
-        super.onPause()
-        BoardsPresenter.save(context!!)
     }
 
     override fun onDestroyView() {

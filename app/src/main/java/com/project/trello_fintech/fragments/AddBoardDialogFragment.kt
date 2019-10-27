@@ -34,22 +34,23 @@ class AddBoardDialogFragment: DialogFragment() {
             }
 
             categoriesSpinner = findViewById<Spinner>(R.id.add_board_category).apply {
-                adapter = ArrayAdapter<Board.Category>(context, android.R.layout.simple_spinner_item,
-                    BoardsPresenter.getAllCategories())
+                BoardsPresenter.getAllCategories()
+                    .subscribe {
+                        adapter = ArrayAdapter<Board.Category>(context, android.R.layout.simple_spinner_item, it)
+                    }
             }
         }
 
-        return with(AlertDialog.Builder(context!!)) {
-            setTitle(R.string.add_board_title)
-            setView(dialogView)
-            setPositiveButton("Создать") { _,_ ->
+        return AlertDialog.Builder(context!!)
+            .setTitle(R.string.add_board_title)
+            .setView(dialogView)
+            .setPositiveButton("Создать") { _,_ ->
                 val newBoard = Board(textInput.text.toString(), categoriesSpinner.selectedItem as Board.Category)
                 BoardsPresenter.add(newBoard)
                 dismiss()
             }
-            setNegativeButton("Отмена", null)
-            create()
-        }
+            .setNegativeButton("Отмена", null)
+            .create()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

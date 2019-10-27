@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">Trello Fintech</string>
+    <string name="app_url">https://trello_fintech.com</string>
     <string name="add_board_title">Создать доску</string>
     <string name="add_board_title_hint">Название доски</string>
     <string name="participants">Участники</string>
     <string name="select_category">Выберите категорию</string>
+    <string name="add_task_title">Создать задачу</string>
+    <string name="add_task_title_hint">Название задачи</string>
 </resources>
