@@ -16,11 +16,9 @@ import java.io.Serializable
  */
 data class Board(
     @SerializedName("name") val title: String,
-    @SerializedName("organization") var category: Category?
+    @SerializedName("organization") var category: Category?,
+    @SerializedName("id") val id: String = ""
     ): Serializable, IListItem {
-
-    @SerializedName("id")
-    val id: String = ""
 
     var columns: List<Column> = listOf()
 

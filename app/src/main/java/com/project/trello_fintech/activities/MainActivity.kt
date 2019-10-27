@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity(), BoardsPresenter.IView {
     }
 
     override fun showError(message: String, code: Int?) {
-        Toast.makeText(this, "Error $code: $message", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Error ${code?: ""}: $message", Toast.LENGTH_LONG).show()
     }
 
     override fun openWebViewForToken() {
