@@ -8,23 +8,29 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.RxJava2Adapter
 import com.project.trello_fintech.fragments.TasksFragment
 import com.project.trello_fintech.fragments.BoardsFragment
 import com.project.trello_fintech.fragments.WebViewFragment
 import com.project.trello_fintech.models.Board
-import com.project.trello_fintech.presenters.BoardsPresenter
+import com.project.trello_fintech.view_models.BoardsViewModel
 import com.project.trello_fintech.utils.StringsRepository
 import okhttp3.Cache
 import retrofit2.HttpException
 
 
-class MainActivity : AppCompatActivity(), BoardsPresenter.IView {
+class MainActivity : AppCompatActivity() {
 
     companion object {
         var cache: Cache? = null
             private set
+    }
+
+    private val boardsViewModel by lazy {
+        ViewModelProviders.of(this).get(BoardsViewModel::class.java)
     }
 
     private lateinit var drawerLayout: DrawerLayout
@@ -37,13 +43,13 @@ class MainActivity : AppCompatActivity(), BoardsPresenter.IView {
             when(it){
                 is HttpException -> {
                     if (it.code() == 401)
-                        BoardsPresenter.boardsView?.openWebViewForToken()
+                        openWebViewForToken()
                     else {
                         val message = it.response()?.errorBody()?.string() ?: it.response()?.message() ?: it.message()
-                        showError(message)
+                        showError(message, it.code())
                     }
                 }
-                else -> showError(it.message.orEmpty())
+                else -> showError(it.message.orEmpty(), null)
             }
         }
 
@@ -62,6 +68,14 @@ class MainActivity : AppCompatActivity(), BoardsPresenter.IView {
             else
                 openWebViewForToken()
         }
+
+        boardsViewModel.onClick.observe(this, Observer {
+            showTasks(it)
+        })
+
+        boardsViewModel.onError.observe(this, Observer { (msg, code) ->
+            showError(msg, code)
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -82,21 +96,21 @@ class MainActivity : AppCompatActivity(), BoardsPresenter.IView {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun showTasks(board: Board) {
+    private fun showTasks(board: Board) {
         supportFragmentManager
             .beginTransaction()
-            .replace(R.id.fragment_container, TasksFragment().apply {
+            .add(R.id.fragment_container, TasksFragment().apply {
                 arguments = Bundle().apply { putSerializable("board", board) }
             })
             .addToBackStack(null)
             .commit()
     }
 
-    override fun showError(message: String, code: Int?) {
+    private fun showError(message: String, code: Int?) {
         Toast.makeText(this, "Error ${code?: ""}: $message", Toast.LENGTH_LONG).show()
     }
 
-    override fun openWebViewForToken() {
+    private fun openWebViewForToken() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, WebViewFragment())
             .commit()

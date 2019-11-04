@@ -4,16 +4,17 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.project.trello_fintech.adapters.BoardStrategy
 import com.project.trello_fintech.models.IListItem
-import com.project.trello_fintech.presenters.BoardsPresenter
+import com.project.trello_fintech.view_models.BoardsViewModel
 
 
 /**
  * ItemTouchHelper.Callback для отслеживания перемещения досок в списке и удаления при помощи свайпа
+ * @property viewModel BoardsViewModel
  */
-class BoardTouchHelperCallback: ItemTouchHelper.Callback() {
+class BoardTouchHelperCallback(private val viewModel: BoardsViewModel): ItemTouchHelper.Callback() {
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        BoardsPresenter.remove((viewHolder as BoardStrategy.ViewHolder).board)
+        viewModel.remove((viewHolder as BoardStrategy.ViewHolder).board)
     }
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) =
@@ -28,7 +29,7 @@ class BoardTouchHelperCallback: ItemTouchHelper.Callback() {
 
     override fun onMove(recyclerView: RecyclerView, source: RecyclerView.ViewHolder,
                         target: RecyclerView.ViewHolder): Boolean {
-        BoardsPresenter.move(
+        viewModel.move(
             (source as BoardStrategy.ViewHolder).board,
             (target as BoardStrategy.ViewHolder).board
         )

@@ -23,11 +23,9 @@ class UsersAdapter(private val cxt: Context, private val layoutId: Int, data: Ar
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View? {
         val view = convertView?: LayoutInflater.from(cxt).inflate(layoutId, parent, false)
 
-        getItem(position)?.let { user ->
-            with(view) {
-                findViewById<TextView>(R.id.user_fullname).text = user.fullname
-                findViewById<AvatarView>(R.id.user_avatar).user = user
-            }
+        getItem(position)?.let {
+            view.findViewById<TextView>(R.id.user_fullname).text = it.fullname
+            view.findViewById<AvatarView>(R.id.user_avatar).user = it
         }
 
         return view

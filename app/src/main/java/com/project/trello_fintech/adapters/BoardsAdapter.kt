@@ -12,14 +12,14 @@ import com.bumptech.glide.request.RequestOptions
 import com.project.trello_fintech.R
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.IListItem
-import com.project.trello_fintech.presenters.BoardsPresenter
+import com.project.trello_fintech.view_models.BoardsViewModel
 
 
 /**
  * Адаптер RecyclerView, хранящий список досок
  * @property data List<IListItem> список элементов (досок и их категорий)
  */
-class BoardsAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class BoardsAdapter(private val viewModel: BoardsViewModel): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var data = listOf<IListItem>()
 
@@ -30,7 +30,7 @@ class BoardsAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         getStrategy(getItemViewType(position)).onBindViewHolder(holder, data[position])
 
     private fun getStrategy(viewType: Int) = when(viewType) {
-        IListItem.BODY -> BoardStrategy
+        IListItem.BODY -> BoardStrategy(viewModel)
         IListItem.HEADER -> CategoryStrategy
         IListItem.NOTHING -> NothingStrategy
         else -> throw IllegalArgumentException(
@@ -49,7 +49,7 @@ interface ViewHolderStrategy {
     fun onBindViewHolder(holder: RecyclerView.ViewHolder, item: IListItem)
 }
 
-object BoardStrategy: ViewHolderStrategy {
+class BoardStrategy(private val viewModel: BoardsViewModel): ViewHolderStrategy {
 
     class ViewHolder(val view: View): RecyclerView.ViewHolder(view) {
         lateinit var board: Board
@@ -65,20 +65,18 @@ object BoardStrategy: ViewHolderStrategy {
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, item: IListItem) {
         with(holder as ViewHolder) {
             board = item as Board
+            view.setOnClickListener{ viewModel.onClick(board) }
             textView.text = board.title
             val prefs = board.prefs
-
             if (prefs != null) {
                 Glide.with(view.context)
                     .asBitmap()
                     .load(prefs.imageUrls?.first()?.url?: prefs.fromHexColor())
                     .centerCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .apply(RequestOptions().override(100, 100))
                     .into(imageView)
             }
-
-            view.setOnClickListener { BoardsPresenter.onClick(board) }
         }
     }
 }

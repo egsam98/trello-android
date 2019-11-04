@@ -1,21 +1,22 @@
-package com.project.trello_fintech.presenters
+package com.project.trello_fintech.view_models
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.project.trello_fintech.R
 import com.project.trello_fintech.models.User
 
 
 /**
- * Презентер для манипуляций над списком пользователей
- * @property users Array<User>
+ * ViewModel для манипуляций над списком пользователей
+ * @property users MutableLiveData<Array<User>>
  */
-object UsersPresenter {
-    var users = arrayOf<User>()
-    private set
+class UsersViewModel: ViewModel() {
+    val users = MutableLiveData<Array<User>>()
 
     fun createMocks(context: Context) {
-        users = arrayOf(
+        users.value = arrayOf(
             User(
                 "Clint Eastwood",
                 BitmapFactory.decodeResource(context.resources, R.drawable.clint_eastwood)

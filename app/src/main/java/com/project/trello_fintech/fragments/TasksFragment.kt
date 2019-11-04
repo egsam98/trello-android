@@ -11,79 +11,88 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DiffUtil
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.TasksAdapter
+import com.project.trello_fintech.listeners.TasksChangeCallback
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.Task
-import com.project.trello_fintech.presenters.TasksPresenter
-import com.project.trello_fintech.views.CircularProgressBar
+import com.project.trello_fintech.view_models.TasksViewModel
 import com.woxthebox.draglistview.BoardView
 import com.woxthebox.draglistview.DragItem
 
 
 /**
  * Фрагмент списка задач (в виде BoardView)
- * @property bucket ImageView мусорное ведро для удаления задач при помощи drag n drop'а
+ * @property bucket ImageView ImageView мусорное ведро для удаления задач при помощи drag n drop'а
  * @property boardView BoardView
- * @property progressBar CircularProgressBar
+ * @property tasksViewModel TasksViewModel
+ * @property binding ViewDataBinding
  */
 class TasksFragment: Fragment() {
 
     private lateinit var bucket: ImageView
     private lateinit var boardView: BoardView
-    private lateinit var progressBar: CircularProgressBar
+
+    private val tasksViewModel by lazy {
+        ViewModelProviders.of(requireActivity()).get(TasksViewModel::class.java)
+    }
 
     /**
      * Обеспечивает удаление элемента столбца через drag n drop на картинку мусорного ведра внизу экрана
      * @property bucket ImageButton
      */
-    inner class DeletableDragItem(context: Context, layoutId: Int): DragItem(context, layoutId) {
-
-        override fun onStartDragAnimation(dragView: View) {
-            bucket.visibility = View.VISIBLE
-        }
-
+    inner class DeletableDragItem(context: Context, layoutId: Int, private val bucket: View): DragItem(context, layoutId) {
         override fun onEndDragAnimation(dragView: View) {
-            TasksPresenter.currentTaskId?.let {
+            TasksViewModel.currentTaskId.value?.let {
                 val lowerBorder = boardView.height - bucket.height - dragView.height
                 if (dragView.y > lowerBorder) {
                     dragView.visibility = View.GONE
-                    boardView.removeFromAllColumnsById(it)
+                    tasksViewModel.removeFromAllColumnsById(it)
                 }
             }
-            bucket.visibility = View.GONE
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_tasks, container, false)
+    private lateinit var binding: ViewDataBinding
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        binding = DataBindingUtil.inflate<ViewDataBinding>(inflater, R.layout.fragment_tasks, container,
+            false)
+        binding.lifecycleOwner = this
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        progressBar = view.findViewById(R.id.progressBar)
-        bucket = view.findViewById(R.id.bucket)
         boardView = view.findViewById<BoardView>(R.id.tasks).apply {
-            val dragItem = DeletableDragItem(view.context, R.layout.task_list_item)
+            val bucket = view.findViewById<ImageView>(R.id.bucket)
+            val dragItem = DeletableDragItem(view.context, R.layout.task_list_item, bucket)
             setCustomDragItem(dragItem)
 
             setBoardListener(object: BoardView.BoardListenerAdapter() {
                 override fun onItemDragStarted(column: Int, row: Int) {
-                    val adapter = this@apply.getAdapter(column) as TasksPresenter.IAdapter
-                    adapter.getPresenter().onItemDragStarted(row)
+                    val adapter = this@apply.getAdapter(column) as TasksAdapter
+                    tasksViewModel.onItemDragStarted(adapter.column, row)
                 }
 
                 override fun onItemDragEnded(fromColumn: Int, fromRow: Int, toColumn: Int, toRow: Int) {
-                    val adapter = this@apply.getAdapter(toColumn) as TasksPresenter.IAdapter
-                    adapter.getPresenter().onItemDragEnded(toRow)
+                    val adapter = this@apply.getAdapter(toColumn) as TasksAdapter
+                    tasksViewModel.onItemDragEnded(adapter.column, toRow)
                 }
             })
         }
 
-        val selectedBoard = (arguments?.getSerializable("board") as Board)
+        val selectedBoard = arguments?.getSerializable("board") as Board
 
         val prefs = selectedBoard.prefs
         if (prefs != null) {
@@ -102,35 +111,29 @@ class TasksFragment: Fragment() {
         }
 
         for (column in selectedBoard.columns) {
-            val presenter = TasksPresenter(column)
-            val tasksAdapter = TasksAdapter(presenter)
-            with(presenter){
-                adapter = tasksAdapter
-                observe()
-                    .doOnSubscribe { progressBar.loading() }
-                    .subscribe {
-                        tasksAdapter.itemList = it
-                        progressBar.done()
-                    }
-            }
+            binding.setVariable(BR.viewModel, tasksViewModel)
 
-            val headerView = LayoutInflater.from(context).inflate(R.layout.task_list_header, null)
-                .apply {
-                    findViewById<TextView>(R.id.task_header_title).text = column.title
-                    findViewById<ImageButton>(R.id.add_task).setOnClickListener {
-                       presenter.add(Task())
-                    }
+            val tasksAdapter = TasksAdapter(column)
+
+            tasksViewModel.load(column)
+
+            tasksViewModel.observe(column, this, Observer {
+                val before = tasksAdapter.itemList?: listOf()
+                tasksAdapter.itemList = it
+                val callback = TasksChangeCallback(before, it)
+                DiffUtil.calculateDiff(callback).dispatchUpdatesTo(tasksAdapter)
+            })
+
+            val headerView = LayoutInflater.from(context).inflate(R.layout.task_list_header, null).apply {
+                findViewById<TextView>(R.id.task_header_title).text = column.title
+                findViewById<ImageButton>(R.id.add_task).setOnClickListener {
+                    tasksViewModel.add(column, Task())
                 }
+            }
 
             boardView.addColumn(tasksAdapter, headerView, null, false)
         }
 
         (activity as AppCompatActivity).supportActionBar?.title = selectedBoard.title
-    }
-
-    private fun BoardView.removeFromAllColumnsById(id: String) {
-        (0 until columnCount)
-            .map { (getAdapter(it) as TasksAdapter).getPresenter() }
-            .forEach { it.removeById(id) }
     }
 }

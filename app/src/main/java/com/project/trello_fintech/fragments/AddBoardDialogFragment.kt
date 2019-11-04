@@ -7,20 +7,29 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
 import com.project.trello_fintech.R
 import com.project.trello_fintech.models.Board
-import com.project.trello_fintech.presenters.BoardsPresenter
+import com.project.trello_fintech.view_models.BoardsViewModel
 
 
 /**
  * Диалоговое окно создания новой доски
  * @property textInput TextInputEditText
+ * @property categoriesSpinner Spinner
+ * @property viewModel BoardsViewModel
  */
 class AddBoardDialogFragment: DialogFragment() {
 
     private lateinit var textInput: TextInputEditText
     private lateinit var categoriesSpinner: Spinner
+
+    private val viewModel by lazy {
+        ViewModelProviders
+            .of(requireActivity())
+            .get(BoardsViewModel::class.java)
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         textInput = TextInputEditText(context).apply {
@@ -34,7 +43,7 @@ class AddBoardDialogFragment: DialogFragment() {
             }
 
             categoriesSpinner = findViewById<Spinner>(R.id.add_board_category).apply {
-                BoardsPresenter.getAllCategories()
+                viewModel.getAllCategories()
                     .subscribe {
                         adapter = ArrayAdapter<Board.Category>(context, android.R.layout.simple_spinner_item, it)
                     }
@@ -46,7 +55,7 @@ class AddBoardDialogFragment: DialogFragment() {
             .setView(dialogView)
             .setPositiveButton("Создать") { _,_ ->
                 val newBoard = Board(textInput.text.toString(), categoriesSpinner.selectedItem as Board.Category)
-                BoardsPresenter.add(newBoard)
+                viewModel.add(newBoard)
                 dismiss()
             }
             .setNegativeButton("Отмена", null)
