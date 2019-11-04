@@ -2,6 +2,7 @@ package com.project.trello_fintech.view_models
 
 import androidx.databinding.ObservableArrayList
 import androidx.lifecycle.*
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.project.trello_fintech.api.BoardApi
 import com.project.trello_fintech.api.RetrofitClient
 import com.project.trello_fintech.api.CategoryApi
@@ -73,10 +74,13 @@ class BoardsViewModel: ViewModel() {
             .observe(owner, observer)
     }
 
-    fun load() {
+    fun load(swipeRefreshLayout: SwipeRefreshLayout? = null) {
         val disposable = boardRetrofit.findAll()
             .doOnSubscribe { isLoading.value = true }
-            .doAfterNext { isLoading.value = false }
+            .doAfterNext {
+                isLoading.value = false
+                swipeRefreshLayout?.isRefreshing = false
+            }
             .cast<MutableList<Board>>()
             .subscribe {
                 boards.data = it

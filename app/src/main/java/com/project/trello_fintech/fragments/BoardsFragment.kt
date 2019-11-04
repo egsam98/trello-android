@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
@@ -25,9 +26,12 @@ import com.project.trello_fintech.view_models.BoardsViewModel
 
 /**
  * Фрагмент содержит список (RecyclerView) досок
+ * @property swipeRefreshLayout SwipeRefreshLayout
  * @property boardsViewModel BoardsViewModel
  */
-class BoardsFragment: Fragment() {
+class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
+
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     private val boardsViewModel by lazy {
         ViewModelProviders.of(requireActivity()).get(BoardsViewModel::class.java)
@@ -42,6 +46,9 @@ class BoardsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.fragment_boards).apply {
+            setOnRefreshListener(this@BoardsFragment)
+        }
 
         val boardsAdapter = BoardsAdapter(boardsViewModel)
 
@@ -64,5 +71,9 @@ class BoardsFragment: Fragment() {
         }
 
         (activity as AppCompatActivity).supportActionBar?.title = "Доски"
+    }
+
+    override fun onRefresh() {
+        boardsViewModel.load(swipeRefreshLayout)
     }
 }
