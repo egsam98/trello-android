@@ -6,25 +6,22 @@ import com.project.trello_fintech.api.TaskApi
 import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.reactive.LiveList
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.cast
 
 
 /**
  * ViewModel для манипуляций над списком задач для каждой колонки отдельно
- * @property disposables CompositeDisposable
  * @property retrofit TaskApi
  * @property tasks LinkedHashMap<Column, LiveList<Task>>
  * @property isLoading MutableLiveData<Boolean>
  */
-class TasksViewModel: ViewModel() {
+class TasksViewModel: CleanableViewModel() {
 
     companion object {
         @JvmStatic
         val currentTaskId = MutableLiveData<String>()
     }
 
-    private val disposables = CompositeDisposable()
     private val retrofit by lazy { RetrofitClient.create<TaskApi>() }
     private val tasks = linkedMapOf<Column, LiveList<Task>>()
     var isLoading = MutableLiveData<Boolean>()
@@ -39,20 +36,21 @@ class TasksViewModel: ViewModel() {
             .subscribe {
                 tasks.getValue(column).data = it
             }
-        disposables.add(disposable)
+        clearOnDestroy(disposable)
     }
 
-    fun observe(column: Column, owner: LifecycleOwner, observer: Observer<in MutableList<Task>>) {
-        LiveDataReactiveStreams
-            .fromPublisher(tasks.getValue(column).observe())
-            .observe(owner, observer)
+    fun observe(column: Column, subscribe: (List<Task>) -> Unit) {
+        val disposable = tasks.getValue(column)
+            .observe()
+            .subscribe(subscribe)
+        clearOnDestroy(disposable)
     }
 
     fun add(column: Column, task: Task) {
         val disposable = retrofit.create(task, column.id).subscribe{
             tasks.getValue(column).add(it)
         }
-        disposables.add(disposable)
+        clearOnDestroy(disposable)
     }
 
     fun onItemDragStarted(column: Column, pos: Int) {
@@ -77,10 +75,5 @@ class TasksViewModel: ViewModel() {
         for (column in tasks.keys) {
             removeById(column, id)
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
     }
 }

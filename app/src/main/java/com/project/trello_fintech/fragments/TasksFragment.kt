@@ -14,9 +14,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.DiffUtil
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.CustomTarget
@@ -24,10 +21,10 @@ import com.bumptech.glide.request.transition.Transition
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.TasksAdapter
-import com.project.trello_fintech.listeners.TasksChangeCallback
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.view_models.TasksViewModel
+import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.woxthebox.draglistview.BoardView
 import com.woxthebox.draglistview.DragItem
 
@@ -45,7 +42,7 @@ class TasksFragment: Fragment() {
     private lateinit var boardView: BoardView
 
     private val tasksViewModel by lazy {
-        ViewModelProviders.of(requireActivity()).get(TasksViewModel::class.java)
+        CleanableViewModelProvider.get<TasksViewModel>(requireActivity())
     }
 
     /**
@@ -117,12 +114,9 @@ class TasksFragment: Fragment() {
 
             tasksViewModel.load(column)
 
-            tasksViewModel.observe(column, this, Observer {
-                val before = tasksAdapter.itemList?: listOf()
+            tasksViewModel.observe(column) {
                 tasksAdapter.itemList = it
-                val callback = TasksChangeCallback(before, it)
-                DiffUtil.calculateDiff(callback).dispatchUpdatesTo(tasksAdapter)
-            })
+            }
 
             val headerView = LayoutInflater.from(context).inflate(R.layout.task_list_header, null).apply {
                 findViewById<TextView>(R.id.task_header_title).text = column.title

@@ -13,7 +13,6 @@ import com.project.trello_fintech.models.NothingListItem
 import com.project.trello_fintech.utils.reactive.LiveEvent
 import com.project.trello_fintech.utils.reactive.LiveList
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.cast
 
 
@@ -24,54 +23,43 @@ private val COLORS = arrayOf("blue", "orange", "green", "red", "purple", "pink",
 
 /**
  * ViewModel для манипуляций над списком досок
- * @property disposables CompositeDisposable
  * @property boardRetrofit BoardApi
  * @property categoryRetrofit CategoryApi
  * @property retrofit ColumnApi
  * @property boards LiveList<Board>
- * @property listItems List<IListItem> список досок и категорий (доски сгруппированы по категориям)
- * (перемещение досок или удаление)
  * @property isLoading MutableLiveData<Boolean>
  * @property onClick LiveEvent<Board>
  * @property onError LiveEvent<Pair<String, Int?>>
  */
-class BoardsViewModel: ViewModel() {
-
-    private val disposables = CompositeDisposable()
+class BoardsViewModel: CleanableViewModel() {
     private val boardRetrofit by lazy { RetrofitClient.create<BoardApi>() }
     private val categoryRetrofit by lazy { RetrofitClient.create<CategoryApi>() }
     private val retrofit by lazy { RetrofitClient.create<ColumnApi>() }
     private val boards = LiveList<Board>()
-    var listItems = listOf<IListItem>()
-        private set
     val isLoading = MutableLiveData<Boolean>()
     val onClick = LiveEvent<Board>()
     val onError = LiveEvent<Pair<String, Int?>>()
 
-    fun observe(owner: LifecycleOwner, observer: Observer<in Pair<List<IListItem>, List<IListItem>>>) {
-        val publisher = boards.observe()
+    fun observe(subscribe: (List<IListItem>) -> Unit) {
+        val disposable = boards.observe()
             .map { boards ->
                 for (board in boards) {
                     if (board.category == null)
                         board.category = Board.Category.default()
                 }
-                val before = listItems.toList()
-                listItems =
-                    if (boards.isNotEmpty())
-                        boards
-                            .groupBy { it.category!! }
-                            .toSortedMap()
-                            .flatMap { (key, boards) ->
-                                mutableListOf<IListItem>(key).apply { addAll(boards) }
-                            }
+                if (boards.isNotEmpty())
+                    boards
+                        .groupBy { it.category!! }
+                        .toSortedMap()
+                        .flatMap { (key, boards) ->
+                            mutableListOf<IListItem>(key).apply { addAll(boards) }
+                        }
                     else
                         listOf(NothingListItem)
-                Pair(before, listItems)
             }
+            .subscribe(subscribe)
 
-        LiveDataReactiveStreams
-            .fromPublisher(publisher)
-            .observe(owner, observer)
+        clearOnDestroy(disposable)
     }
 
     fun load(swipeRefreshLayout: SwipeRefreshLayout? = null) {
@@ -85,7 +73,7 @@ class BoardsViewModel: ViewModel() {
             .subscribe {
                 boards.data = it
             }
-        disposables.add(disposable)
+        clearOnDestroy(disposable)
     }
 
     fun add(board: Board) {
@@ -101,7 +89,7 @@ class BoardsViewModel: ViewModel() {
                     boards add it
                     onClick(it)
                 }
-            disposables.add(disposable)
+            clearOnDestroy(disposable)
         }
     }
 
@@ -126,17 +114,12 @@ class BoardsViewModel: ViewModel() {
             board.columns = columns
             onClick.emit(board)
         }
-        disposables.add(disposable)
+        clearOnDestroy(disposable)
     }
 
     fun getAllCategories() = categoryRetrofit.findAllAvailable()
         .map { it.toMutableList().apply { add(0, Board.Category.default()) } }
         .observeOn(AndroidSchedulers.mainThread())
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
-    }
 }
 
 

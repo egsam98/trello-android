@@ -7,11 +7,11 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
 import com.project.trello_fintech.R
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.view_models.BoardsViewModel
+import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 
 
 /**
@@ -26,9 +26,7 @@ class AddBoardDialogFragment: DialogFragment() {
     private lateinit var categoriesSpinner: Spinner
 
     private val viewModel by lazy {
-        ViewModelProviders
-            .of(requireActivity())
-            .get(BoardsViewModel::class.java)
+        CleanableViewModelProvider.get<BoardsViewModel>(requireActivity())
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

@@ -8,20 +8,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.*
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.BoardsAdapter
 import com.project.trello_fintech.listeners.BoardTouchHelperCallback
-import com.project.trello_fintech.listeners.BoardsChangeCallback
 import com.project.trello_fintech.view_models.BoardsViewModel
+import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 
 
 /**
@@ -34,7 +29,7 @@ class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     private val boardsViewModel by lazy {
-        ViewModelProviders.of(requireActivity()).get(BoardsViewModel::class.java)
+        CleanableViewModelProvider.get<BoardsViewModel>(requireActivity())
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -54,11 +49,9 @@ class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
         boardsViewModel.load()
 
-        boardsViewModel.observe(this, Observer { (before, after) ->
-            boardsAdapter.data = after
-            val callback = BoardsChangeCallback(before, after)
-            DiffUtil.calculateDiff(callback).dispatchUpdatesTo(boardsAdapter)
-        })
+        boardsViewModel.observe {
+            boardsAdapter.setData(it)
+        }
 
         view.findViewById<RecyclerView>(R.id.boards_list).apply {
             layoutManager = LinearLayoutManager(requireContext())

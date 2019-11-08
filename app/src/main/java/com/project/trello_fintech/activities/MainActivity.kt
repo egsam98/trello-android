@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.RxJava2Adapter
 import com.project.trello_fintech.fragments.TasksFragment
@@ -18,6 +17,7 @@ import com.project.trello_fintech.fragments.WebViewFragment
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.view_models.BoardsViewModel
 import com.project.trello_fintech.utils.StringsRepository
+import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import okhttp3.Cache
 import retrofit2.HttpException
 
@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val boardsViewModel by lazy {
-        ViewModelProviders.of(this).get(BoardsViewModel::class.java)
+        CleanableViewModelProvider.get<BoardsViewModel>(this)
     }
 
     private lateinit var drawerLayout: DrawerLayout

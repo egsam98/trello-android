@@ -5,11 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.project.trello_fintech.R
+import com.project.trello_fintech.listeners.BoardsChangeCallback
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.IListItem
 import com.project.trello_fintech.view_models.BoardsViewModel
@@ -17,28 +19,33 @@ import com.project.trello_fintech.view_models.BoardsViewModel
 
 /**
  * Адаптер RecyclerView, хранящий список досок
- * @property data List<IListItem> список элементов (досок и их категорий)
+ * @property viewModel BoardsViewModel
+ * @property differ AsyncListDiffer<IListItem> для расчета разницы между предыдущим и текущим списком в бэкграунд потоке
  */
 class BoardsAdapter(private val viewModel: BoardsViewModel): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    var data = listOf<IListItem>()
+    private val differ = AsyncListDiffer<IListItem>(this, BoardsChangeCallback)
+
+    fun setData(data: List<IListItem>) {
+        differ.submitList(data)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         getStrategy(viewType).onCreateViewHolder(parent)
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) =
-        getStrategy(getItemViewType(position)).onBindViewHolder(holder, data[position])
+        getStrategy(getItemViewType(position)).onBindViewHolder(holder, differ.currentList[position])
 
     private fun getStrategy(viewType: Int) = when(viewType) {
         IListItem.BODY -> BoardStrategy(viewModel)
         IListItem.HEADER -> CategoryStrategy
         IListItem.NOTHING -> NothingStrategy
         else -> throw IllegalArgumentException(
-            "ViewType must be any of ${IListItem.HEADER}, ${IListItem.BODY} or ${IListItem.NOTHING}")
+            "ViewType must be any get ${IListItem.HEADER}, ${IListItem.BODY} or ${IListItem.NOTHING}")
     }
 
-    override fun getItemViewType(position: Int) = data[position].getType()
-    override fun getItemCount() = data.size
+    override fun getItemViewType(position: Int) = differ.currentList[position].getType()
+    override fun getItemCount() = differ.currentList.size
 }
 
 /**
