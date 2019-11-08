@@ -44,8 +44,9 @@ class AddBoardDialogFragment: DialogFragment() {
 
             categoriesSpinner = findViewById<Spinner>(R.id.add_board_category).apply {
                 viewModel.getAllCategories()
-                    .subscribe {
-                        adapter = ArrayAdapter<Board.Category>(context, android.R.layout.simple_spinner_item, it)
+                    .subscribe {categories ->
+                        adapter = ArrayAdapter<Board.Category>(context, android.R.layout.simple_spinner_item, categories)
+                        savedInstanceState?.let { setSelection(it.getInt("category_index")) }
                     }
             }
         }
@@ -65,5 +66,6 @@ class AddBoardDialogFragment: DialogFragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putCharSequence("input", textInput.text)
+        outState.putInt("category_index", categoriesSpinner.selectedItemPosition)
     }
 }
