@@ -33,6 +33,10 @@ class AvatarView(cxt: Context, attrsSet: AttributeSet): AppCompatImageView(cxt, 
 
     var user: User? = null
 
+    private lateinit var roundedBitmap: Bitmap
+    private var userAvatar: Bitmap? = null
+    private var avatarSize: Int? = null
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -49,10 +53,14 @@ class AvatarView(cxt: Context, attrsSet: AttributeSet): AppCompatImageView(cxt, 
         user?.run {
             if (avatar == null) {
                 drawDefaultImage(fullname[0], canvas) // Передается первая буква имени
-            } else {
-                val roundBitmap = getRoundedBitmap(avatar, size)
-                canvas.drawBitmap(roundBitmap, startX, startY, null)
+                return
             }
+            if (userAvatar != avatar || avatarSize != size) {
+                userAvatar = avatar
+                avatarSize = size
+                roundedBitmap = getRoundedBitmap(avatar, size)
+            }
+            canvas.drawBitmap(roundedBitmap, startX, startY, null)
         }
     }
 
