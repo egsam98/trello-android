@@ -5,6 +5,7 @@ import com.project.trello_fintech.api.RetrofitClient
 import com.project.trello_fintech.api.TaskApi
 import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
+import com.project.trello_fintech.utils.reactive.LiveEvent
 import com.project.trello_fintech.utils.reactive.LiveList
 import io.reactivex.rxkotlin.cast
 
@@ -22,10 +23,12 @@ class TasksViewModel: CleanableViewModel() {
         val currentTaskId = MutableLiveData<String>()
     }
 
-    private val retrofit by lazy { RetrofitClient.create<TaskApi>() }
+    private val retrofit by lazy { RetrofitClient.create<TaskApi>(onError) }
     private val tasks = linkedMapOf<Column, LiveList<Task>>()
     var isLoading = MutableLiveData<Boolean>()
         private set
+
+    val onError = LiveEvent<Pair<String, Int?>>()
 
     fun load(column: Column) {
         tasks[column] = LiveList()

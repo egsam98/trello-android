@@ -41,7 +41,7 @@ class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.fragment_boards).apply {
+        swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.boards_refresh_layout).apply {
             setOnRefreshListener(this@BoardsFragment)
         }
 

@@ -9,10 +9,11 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.project.trello_fintech.R
-import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.RxJava2Adapter
 import com.project.trello_fintech.utils.StringsRepository
+import com.project.trello_fintech.utils.reactive.LiveEvent
 import io.reactivex.android.schedulers.AndroidSchedulers
+import okhttp3.Cache
 
 
 /**
@@ -20,9 +21,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers
  */
 object RetrofitClient {
 
+    var cache: Cache? = null
+
     val _retrofitBuilder: Retrofit.Builder by lazy {
         val httpClient = OkHttpClient.Builder()
-            .cache(MainActivity.cache)
+            .cache(cache)
             .addInterceptor {
                 val token = StringsRepository.get("token")
                 val request = it.request()
@@ -62,8 +65,8 @@ object RetrofitClient {
                 "return_url=${BuildConfig.TRELLO_URL_CALLBACK}"
     }
 
-    inline fun <reified T> create(): T {
-        val rxJava2Adapter = RxJava2Adapter(AndroidSchedulers.mainThread())
+    inline fun <reified T> create(onError: LiveEvent<Pair<String, Int?>>): T {
+        val rxJava2Adapter = RxJava2Adapter(AndroidSchedulers.mainThread(), onError)
         return _retrofitBuilder
             .addCallAdapterFactory(rxJava2Adapter)
             .build()

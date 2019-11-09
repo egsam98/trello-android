@@ -1,36 +1,33 @@
 package com.project.trello_fintech.activities
 
-import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import com.project.trello_fintech.R
-import com.project.trello_fintech.adapters.RxJava2Adapter
 import com.project.trello_fintech.fragments.TasksFragment
 import com.project.trello_fintech.fragments.BoardsFragment
 import com.project.trello_fintech.fragments.WebViewFragment
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.view_models.BoardsViewModel
 import com.project.trello_fintech.utils.StringsRepository
+import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
-import okhttp3.Cache
-import retrofit2.HttpException
 
 
 class MainActivity : AppCompatActivity() {
 
-    companion object {
-        var cache: Cache? = null
-            private set
-    }
-
     private val boardsViewModel by lazy {
         CleanableViewModelProvider.get<BoardsViewModel>(this)
+    }
+
+    private val tasksViewModel by lazy {
+        CleanableViewModelProvider.get<TasksViewModel>(this)
     }
 
     private lateinit var drawerLayout: DrawerLayout
@@ -39,43 +36,33 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        RxJava2Adapter.errorHandler = {
-            when(it){
-                is HttpException -> {
-                    if (it.code() == 401)
-                        openWebViewForToken()
-                    else {
-                        val message = it.response()?.errorBody()?.string() ?: it.response()?.message() ?: it.message()
-                        showError(message, it.code())
-                    }
-                }
-                else -> showError(it.message.orEmpty(), null)
-            }
-        }
+        if (savedInstanceState == null)
+            supportFragmentManager.beginTransaction()
+                .add(R.id.fragment_container, BoardsFragment())
+                .commit()
 
-        cache = Cache(cacheDir, 4096)
-        StringsRepository.attach(getPreferences(Context.MODE_PRIVATE))
-
-        drawerLayout = findViewById<DrawerLayout>(R.id.fragment_container).apply {
+        drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout).apply {
             setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-        }
-
-        if (savedInstanceState == null) {
-            if (StringsRepository.contains("token"))
-                supportFragmentManager.beginTransaction()
-                    .add(R.id.fragment_container, BoardsFragment())
-                    .commit()
-            else
-                openWebViewForToken()
         }
 
         boardsViewModel.onClick.observe(this, Observer {
             showTasks(it)
         })
 
-        boardsViewModel.onError.observe(this, Observer { (msg, code) ->
-            showError(msg, code)
-        })
+        for (onError in arrayOf(boardsViewModel.onError, tasksViewModel.onError)) {
+            onError.observe(this@MainActivity, Observer {(msg, code) ->
+                if ((msg.contains("token") || code == 401) && (savedInstanceState == null))
+                        openWebViewForToken()
+                else
+                    showError(msg, code)
+            })
+        }
+
+        findViewById<Button>(R.id.trello_logout).setOnClickListener {
+            StringsRepository.delete("token")
+            drawerLayout.closeDrawers()
+            openWebViewForToken()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -113,6 +100,7 @@ class MainActivity : AppCompatActivity() {
     private fun openWebViewForToken() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, WebViewFragment())
+            .addToBackStack(null)
             .commit()
     }
 }

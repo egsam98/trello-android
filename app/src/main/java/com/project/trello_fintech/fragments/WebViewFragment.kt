@@ -1,6 +1,7 @@
 package com.project.trello_fintech.fragments
 
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +10,6 @@ import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
 import com.project.trello_fintech.BuildConfig
 import com.project.trello_fintech.api.RetrofitClient
-import com.project.trello_fintech.R
 import com.project.trello_fintech.utils.StringsRepository
 
 /**
@@ -36,13 +36,8 @@ class WebViewFragment: Fragment() {
             webViewClient = object: WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String): Boolean {
                     if (url.startsWith(BuildConfig.TRELLO_URL_CALLBACK)) {
-                        with(activity!!) {
-                            StringsRepository.put("token", url.substringAfter("#token="))
-                            supportFragmentManager
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, BoardsFragment())
-                                .commit()
-                        }
+                        StringsRepository.put("token", url.substringAfter("#token="))
+                        requireActivity().supportFragmentManager.popBackStack()
                         return false
                     }
                     loadUrl(url)
@@ -52,5 +47,7 @@ class WebViewFragment: Fragment() {
         }
 
         webView.loadUrl(url)
+
+        view.setOnKeyListener { _, keyCode, _ -> keyCode == KeyEvent.KEYCODE_BACK }
     }
 }
