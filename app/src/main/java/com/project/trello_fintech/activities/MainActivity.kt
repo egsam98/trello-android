@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
         for (onError in arrayOf(boardsViewModel.onError, tasksViewModel.onError)) {
             onError.observe(this@MainActivity, Observer {(msg, code) ->
                 if ((msg.contains("token") || code == 401) && (savedInstanceState == null))
-                        openWebViewForToken()
+                    openWebViewForToken()
                 else
                     showError(msg, code)
             })

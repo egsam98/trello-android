@@ -65,13 +65,13 @@ class BoardsViewModel: CleanableViewModel() {
     fun load(swipeRefreshLayout: SwipeRefreshLayout? = null) {
         val disposable = boardRetrofit.findAll()
             .doOnSubscribe { isLoading.value = true }
-            .doAfterNext {
+            .doOnSuccess {
                 isLoading.value = false
                 swipeRefreshLayout?.isRefreshing = false
             }
             .cast<MutableList<Board>>()
-            .subscribe {
-                boards.data = it
+            .subscribe { boardList ->
+                boards.data = boardList
             }
         clearOnDestroy(disposable)
     }
@@ -84,10 +84,10 @@ class BoardsViewModel: CleanableViewModel() {
         }
         board.category?.let { category ->
             val disposable = boardRetrofit.create(board, category.id, COLORS.random())
-                .subscribe {
-                    it.category = category
-                    boards add it
-                    onClick(it)
+                .subscribe { board ->
+                    board.category = category
+                    boards add board
+                    onClick(board)
                 }
             clearOnDestroy(disposable)
         }

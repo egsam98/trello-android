@@ -1,14 +1,14 @@
 package com.project.trello_fintech.adapters
 
 import com.project.trello_fintech.utils.reactive.LiveEvent
-import io.reactivex.Observable
+import io.reactivex.*
 import retrofit2.Call
 import retrofit2.CallAdapter
+import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import java.lang.IllegalArgumentException
 import java.lang.reflect.Type
-import io.reactivex.Scheduler
-import retrofit2.HttpException
 
 
 /**
@@ -30,19 +30,38 @@ class RxJava2Adapter(
     }
 
     private inner class RxCallAdapterWrapper<R>(private val wrapped: CallAdapter<R, *>): CallAdapter<R, Any> {
-        override fun adapt(call: Call<R>): Any = (wrapped.adapt(call) as Observable<*>)
-            .observeOn(observeOn)
-            .doOnError {
-                val messageAndCode: Pair<String, Int?> = when (it) {
-                    is HttpException -> {
-                        val message = it.response()?.errorBody()?.string() ?: it.response()?.message() ?: it.message()
-                        Pair(message, it.code())
-                    }
-                    else -> Pair(it.message.orEmpty(), null)
-                }
-                onError.emit(messageAndCode)
+        override fun adapt(call: Call<R>): Any {
+            val source = wrapped.adapt(call)
+            return when (source) {
+                is Observable<*> -> source.observeOn(observeOn)
+                    .doOnError{ emitError(it) }
+                    .onErrorResumeNext(Observable.empty())
+                is Flowable<*> -> source.observeOn(observeOn)
+                    .doOnError { emitError(it) }
+                    .onErrorResumeNext(Flowable.empty())
+                is Single<*> -> source.observeOn(observeOn)
+                    .doOnError { emitError(it) }
+                    .onErrorResumeNext(Single.never())
+                is Completable -> source.observeOn(observeOn)
+                    .doOnError { emitError(it) }
+                    .onErrorComplete()
+                is Maybe<*> -> source.observeOn(observeOn)
+                    .doOnError { emitError(it) }
+                    .onErrorResumeNext(Maybe.empty())
+                else -> throw IllegalArgumentException("Unknown reactive source")
             }
-            .onErrorResumeNext(Observable.empty())
+        }
+
+        private fun emitError(t: Throwable) {
+            val messageAndCode: Pair<String, Int?> = when (t) {
+                is HttpException -> {
+                    val message = t.response()?.errorBody()?.string() ?: t.response()?.message() ?: t.message()
+                    Pair(message, t.code())
+                }
+                else -> Pair(t.message.orEmpty(), null)
+            }
+            onError.emit(messageAndCode)
+        }
 
         override fun responseType(): Type = wrapped.responseType()
     }

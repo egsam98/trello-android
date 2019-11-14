@@ -34,10 +34,10 @@ class TasksViewModel: CleanableViewModel() {
         tasks[column] = LiveList()
         val disposable = retrofit.findAllByColumnId(column.id)
             .doOnSubscribe { isLoading.value = true }
-            .doAfterNext { isLoading.value = false }
+            .doAfterSuccess { isLoading.value = false }
             .cast<MutableList<Task>>()
-            .subscribe {
-                tasks.getValue(column).data = it
+            .subscribe { taskList ->
+                tasks.getValue(column).data = taskList
             }
         clearOnDestroy(disposable)
     }
@@ -50,8 +50,8 @@ class TasksViewModel: CleanableViewModel() {
     }
 
     fun add(column: Column, task: Task) {
-        val disposable = retrofit.create(task, column.id).subscribe{
-            tasks.getValue(column).add(it)
+        val disposable = retrofit.create(task, column.id).subscribe{ newTask ->
+            tasks.getValue(column).add(newTask)
         }
         clearOnDestroy(disposable)
     }
