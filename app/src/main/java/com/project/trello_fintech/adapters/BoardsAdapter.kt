@@ -41,7 +41,7 @@ class BoardsAdapter(private val viewModel: BoardsViewModel): RecyclerView.Adapte
         IListItem.HEADER -> CategoryStrategy
         IListItem.NOTHING -> NothingStrategy
         else -> throw IllegalArgumentException(
-            "ViewType must be any get ${IListItem.HEADER}, ${IListItem.BODY} or ${IListItem.NOTHING}")
+            "ViewType must be any of ${IListItem.HEADER}, ${IListItem.BODY} or ${IListItem.NOTHING}")
     }
 
     override fun getItemViewType(position: Int) = differ.currentList[position].getType()

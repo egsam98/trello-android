@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.*
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -23,19 +24,16 @@ import javax.inject.Inject
 
 /**
  * Фрагмент содержит список (RecyclerView) досок
- * @property swipeRefreshLayout SwipeRefreshLayout
  * @property cleanableViewModelProvider CleanableViewModelProvider
  * @property boardsViewModel BoardsViewModel
  */
 class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
-    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
-
     @Inject
     lateinit var cleanableViewModelProvider: CleanableViewModelProvider
 
     private val boardsViewModel by lazy {
-        cleanableViewModelProvider.get<BoardsViewModel>(this)
+        cleanableViewModelProvider.get<BoardsViewModel>(viewLifecycleOwner)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -48,16 +46,20 @@ class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.boards_refresh_layout).apply {
+        val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.boards_refresh_layout).apply {
             setOnRefreshListener(this@BoardsFragment)
         }
 
         val boardsAdapter = BoardsAdapter(boardsViewModel)
 
-        boardsViewModel.load()
-
-        boardsViewModel.observe {
-            boardsAdapter.setData(it)
+        with(boardsViewModel) {
+            load()
+            observe {
+                boardsAdapter.setData(it)
+            }
+            isLoading.observe(viewLifecycleOwner, Observer {
+                if (!it) swipeRefreshLayout.isRefreshing = it
+            })
         }
 
         view.findViewById<RecyclerView>(R.id.boards_list).apply {
@@ -74,6 +76,6 @@ class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
     }
 
     override fun onRefresh() {
-        boardsViewModel.load(swipeRefreshLayout)
+        boardsViewModel.load()
     }
 }

@@ -62,13 +62,10 @@ class BoardsViewModel(private val retrofitClient: RetrofitClient): CleanableView
         clearOnDestroy(disposable)
     }
 
-    fun load(swipeRefreshLayout: SwipeRefreshLayout? = null) {
+    fun load() {
         val disposable = boardRetrofit.findAll()
             .doOnSubscribe { isLoading.value = true }
-            .doOnSuccess {
-                isLoading.value = false
-                swipeRefreshLayout?.isRefreshing = false
-            }
+            .doOnSuccess { isLoading.value = false }
             .cast<MutableList<Board>>()
             .subscribe { boardList ->
                 boards.data = boardList
