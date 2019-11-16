@@ -10,16 +10,18 @@ import java.lang.IllegalArgumentException
 
 /**
  * ViewModelProviders для классов, наслед. CleanableViewModel
+ * @property owner LifecycleOwner
+ * @property viewModelFactory ViewModelFactory
  */
-object CleanableViewModelProvider {
-    inline fun <reified T: CleanableViewModel> get(owner: LifecycleOwner): T {
+class CleanableViewModelProvider(val owner: LifecycleOwner, val viewModelFactory: ViewModelFactory) {
+    inline fun <reified T: CleanableViewModel> get(disposableOwner: LifecycleOwner): T {
         val viewModelProvider = when (owner) {
-            is Fragment -> ViewModelProviders.of(owner)
-            is FragmentActivity -> ViewModelProviders.of(owner)
+            is Fragment -> ViewModelProviders.of(owner, viewModelFactory)
+            is FragmentActivity -> ViewModelProviders.of(owner, viewModelFactory)
             else -> throw IllegalArgumentException("owner must be Fragment or FragmentActivity")
         }
         return viewModelProvider.get(T::class.java).apply {
-            owner.lifecycle.addObserver(this)
+            disposableOwner.lifecycle.addObserver(this)
         }
     }
 }

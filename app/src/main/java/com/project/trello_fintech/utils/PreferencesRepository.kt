@@ -1,6 +1,8 @@
 package com.project.trello_fintech.utils
 
+import android.content.Context
 import android.content.SharedPreferences
+import android.preference.PreferenceManager
 
 
 /**
@@ -8,15 +10,11 @@ import android.content.SharedPreferences
  * @param T
  * @property preferences SharedPreferences?
  */
-abstract class PreferencesRepository<T> {
-    protected var preferences: SharedPreferences? = null
+abstract class PreferencesRepository<T>(context: Context) {
+    protected val preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-    fun attach(sharedPreferences: SharedPreferences){
-        preferences = sharedPreferences
-    }
-
-    fun contains(key: String) = preferences?.contains(key)?: false
-    fun delete(key: String) = preferences?.edit()?.remove(key)?.apply()
+    fun contains(key: String) = preferences.contains(key)
+    fun delete(key: String) = preferences.edit().remove(key).apply()
 
     abstract fun get(key: String, default: T? = null): T?
     abstract fun put(key: String, value: T)
@@ -25,10 +23,10 @@ abstract class PreferencesRepository<T> {
 /**
  * Реализация PreferencesRepository для хранения строк
  */
-object StringsRepository: PreferencesRepository<String>() {
-    override fun get(key: String, default: String?) = preferences?.getString(key, default)
+class StringsRepository(context: Context): PreferencesRepository<String>(context) {
+    override fun get(key: String, default: String?): String? = preferences.getString(key, default)
 
     override fun put(key: String, value: String) {
-        preferences?.edit()?.putString(key, value)?.apply()
+        preferences.edit().putString(key, value)?.apply()
     }
 }

@@ -9,25 +9,38 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
+import com.project.trello_fintech.Application
 import com.project.trello_fintech.R
+import com.project.trello_fintech.di.components.MainActivityComponent
+import com.project.trello_fintech.di.modules.MainActivityModule
 import com.project.trello_fintech.fragments.TasksFragment
 import com.project.trello_fintech.fragments.BoardsFragment
 import com.project.trello_fintech.fragments.WebViewFragment
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.view_models.BoardsViewModel
-import com.project.trello_fintech.utils.StringsRepository
 import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
+import com.project.trello_fintech.utils.StringsRepository
+import javax.inject.Inject
 
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        lateinit var component: MainActivityComponent
+    }
+
+    @Inject
+    lateinit var cleanableViewModelProvider: CleanableViewModelProvider
+
+    @Inject
+    lateinit var stringsRepository: StringsRepository
 
     private val boardsViewModel by lazy {
-        CleanableViewModelProvider.get<BoardsViewModel>(this)
+        cleanableViewModelProvider.get<BoardsViewModel>(this)
     }
 
     private val tasksViewModel by lazy {
-        CleanableViewModelProvider.get<TasksViewModel>(this)
+        cleanableViewModelProvider.get<TasksViewModel>(this)
     }
 
     private lateinit var drawerLayout: DrawerLayout
@@ -35,6 +48,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        component = Application.component.plusMainActivityComponent(MainActivityModule(this)).apply {
+            inject(this@MainActivity)
+        }
 
         if (savedInstanceState == null)
             supportFragmentManager.beginTransaction()
@@ -59,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.trello_logout).setOnClickListener {
-            StringsRepository.delete("token")
+            stringsRepository.delete("token")
             drawerLayout.closeDrawers()
             openWebViewForToken()
         }

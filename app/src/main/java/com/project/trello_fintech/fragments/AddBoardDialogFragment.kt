@@ -9,15 +9,18 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.textfield.TextInputEditText
 import com.project.trello_fintech.R
+import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.view_models.BoardsViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
+import javax.inject.Inject
 
 
 /**
  * Диалоговое окно создания новой доски
  * @property textInput TextInputEditText
  * @property categoriesSpinner Spinner
+ * @property cleanableViewModelProvider CleanableViewModelProvider
  * @property viewModel BoardsViewModel
  */
 class AddBoardDialogFragment: DialogFragment() {
@@ -25,11 +28,16 @@ class AddBoardDialogFragment: DialogFragment() {
     private lateinit var textInput: TextInputEditText
     private lateinit var categoriesSpinner: Spinner
 
+    @Inject
+    lateinit var cleanableViewModelProvider: CleanableViewModelProvider
+
     private val viewModel by lazy {
-        CleanableViewModelProvider.get<BoardsViewModel>(requireActivity())
+        cleanableViewModelProvider.get<BoardsViewModel>(requireParentFragment())
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        MainActivity.component.inject(this)
+
         textInput = TextInputEditText(context).apply {
             hint = resources.getString(R.string.add_board_title_hint)
             setText(savedInstanceState?.getCharSequence("input"))

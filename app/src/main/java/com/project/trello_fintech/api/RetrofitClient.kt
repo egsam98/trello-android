@@ -1,14 +1,11 @@
 package com.project.trello_fintech.api
 
-
-import android.content.Context
 import android.util.Log
 import com.google.gson.GsonBuilder
 import com.project.trello_fintech.BuildConfig
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.RxJava2Adapter
 import com.project.trello_fintech.utils.StringsRepository
 import com.project.trello_fintech.utils.reactive.LiveEvent
@@ -18,16 +15,15 @@ import okhttp3.Cache
 
 /**
  * Клиент для осуществления CRUD
+ * @property _retrofitBuilder Builder
  */
-object RetrofitClient {
-
-    var cache: Cache? = null
+class RetrofitClient(cache: Cache, stringsRepository: StringsRepository) {
 
     val _retrofitBuilder: Retrofit.Builder by lazy {
         val httpClient = OkHttpClient.Builder()
             .cache(cache)
             .addInterceptor {
-                val token = StringsRepository.get("token")
+                val token = stringsRepository.get("token")
                 val request = it.request()
                 val modifiedUrl = request.url()
                     .newBuilder()
@@ -51,18 +47,6 @@ object RetrofitClient {
             .client(httpClient)
             .baseUrl(BuildConfig.TRELLO_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(gson))
-    }
-
-    fun getAuthUrl(cxt: Context): String {
-        val expiration = "30days"
-        return "${BuildConfig.TRELLO_BASE_URL}authorize?" +
-                "expiration=$expiration&" +
-                "name=${cxt.resources.getString(R.string.app_name)}&" +
-                "callback_method=fragment&" +
-                "scope=read,write&" +
-                "response_type=token&" +
-                "key=${BuildConfig.TRELLO_API_KEY}&" +
-                "return_url=${BuildConfig.TRELLO_URL_CALLBACK}"
     }
 
     inline fun <reified T> create(onError: LiveEvent<Pair<String, Int?>>): T {

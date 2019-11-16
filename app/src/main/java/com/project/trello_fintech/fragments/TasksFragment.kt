@@ -20,6 +20,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
+import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.TasksAdapter
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.Task
@@ -27,6 +28,7 @@ import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.woxthebox.draglistview.BoardView
 import com.woxthebox.draglistview.DragItem
+import javax.inject.Inject
 
 
 /**
@@ -38,18 +40,21 @@ import com.woxthebox.draglistview.DragItem
  */
 class TasksFragment: Fragment() {
 
-    private lateinit var bucket: ImageView
-    private lateinit var boardView: BoardView
+    @Inject
+    lateinit var cleanableViewModelProvider: CleanableViewModelProvider
 
     private val tasksViewModel by lazy {
-        CleanableViewModelProvider.get<TasksViewModel>(requireActivity())
+        cleanableViewModelProvider.get<TasksViewModel>(this)
     }
+
+    private lateinit var bucket: ImageView
+    private lateinit var boardView: BoardView
 
     /**
      * Обеспечивает удаление элемента столбца через drag n drop на картинку мусорного ведра внизу экрана
      * @property bucket ImageButton
      */
-    inner class DeletableDragItem(context: Context, layoutId: Int, private val bucket: View): DragItem(context, layoutId) {
+    inner class DeletableDragItem(context: Context, layoutId: Int): DragItem(context, layoutId) {
         override fun onEndDragAnimation(dragView: View) {
             TasksViewModel.currentTaskId.value?.let {
                 val lowerBorder = boardView.height - bucket.height - dragView.height
@@ -71,9 +76,11 @@ class TasksFragment: Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        MainActivity.component.inject(this)
+
+        bucket = view.findViewById(R.id.bucket)
         boardView = view.findViewById<BoardView>(R.id.tasks).apply {
-            val bucket = view.findViewById<ImageView>(R.id.bucket)
-            val dragItem = DeletableDragItem(view.context, R.layout.task_list_item, bucket)
+            val dragItem = DeletableDragItem(view.context, R.layout.task_list_item)
             setCustomDragItem(dragItem)
 
             setBoardListener(object: BoardView.BoardListenerAdapter() {
@@ -112,6 +119,7 @@ class TasksFragment: Fragment() {
 
             val tasksAdapter = TasksAdapter(column)
 
+//            lifecycle.addObserver(tasksViewModel)
             tasksViewModel.load(column)
 
             tasksViewModel.observe(column) {

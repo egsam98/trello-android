@@ -1,17 +1,21 @@
 package com.project.trello_fintech
 
 import android.app.Application
-import android.preference.PreferenceManager
-import com.project.trello_fintech.api.RetrofitClient
-import com.project.trello_fintech.utils.StringsRepository
-import okhttp3.Cache
+import com.project.trello_fintech.di.components.AppComponent
+import com.project.trello_fintech.di.components.DaggerAppComponent
+import com.project.trello_fintech.di.modules.AppContextModule
 
 
 class Application: Application() {
+    companion object {
+        lateinit var component: AppComponent
+            private set
+    }
+
     override fun onCreate() {
         super.onCreate()
-
-        RetrofitClient.cache = Cache(cacheDir, 4096)
-        StringsRepository.attach(PreferenceManager.getDefaultSharedPreferences(this))
+        component = DaggerAppComponent.builder()
+            .appContextModule(AppContextModule(applicationContext))
+            .build()
     }
 }

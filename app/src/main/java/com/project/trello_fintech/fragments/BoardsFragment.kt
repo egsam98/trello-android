@@ -13,26 +13,33 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
+import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.BoardsAdapter
 import com.project.trello_fintech.listeners.BoardTouchHelperCallback
 import com.project.trello_fintech.view_models.BoardsViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
+import javax.inject.Inject
 
 
 /**
  * Фрагмент содержит список (RecyclerView) досок
  * @property swipeRefreshLayout SwipeRefreshLayout
+ * @property cleanableViewModelProvider CleanableViewModelProvider
  * @property boardsViewModel BoardsViewModel
  */
 class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
+    @Inject
+    lateinit var cleanableViewModelProvider: CleanableViewModelProvider
+
     private val boardsViewModel by lazy {
-        CleanableViewModelProvider.get<BoardsViewModel>(requireActivity())
+        cleanableViewModelProvider.get<BoardsViewModel>(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        MainActivity.component.inject(this)
         val binding = DataBindingUtil.inflate<ViewDataBinding>(inflater, R.layout.fragment_boards, container, false)
         binding.setVariable(BR.viewModel, boardsViewModel)
         binding.lifecycleOwner = this

@@ -31,10 +31,10 @@ private val COLORS = arrayOf("blue", "orange", "green", "red", "purple", "pink",
  * @property onClick LiveEvent<Board>
  * @property onError LiveEvent<Pair<String, Int?>>
  */
-class BoardsViewModel: CleanableViewModel() {
-    private val boardRetrofit by lazy { RetrofitClient.create<BoardApi>(onError) }
-    private val categoryRetrofit by lazy { RetrofitClient.create<CategoryApi>(onError) }
-    private val retrofit by lazy { RetrofitClient.create<ColumnApi>(onError) }
+class BoardsViewModel(private val retrofitClient: RetrofitClient): CleanableViewModel() {
+    private val boardRetrofit by lazy { retrofitClient.create<BoardApi>(onError) }
+    private val categoryRetrofit by lazy { retrofitClient.create<CategoryApi>(onError) }
+    private val retrofit by lazy { retrofitClient.create<ColumnApi>(onError) }
     private val boards = LiveList<Board>()
     val isLoading = MutableLiveData<Boolean>()
     val onClick = LiveEvent<Board>()

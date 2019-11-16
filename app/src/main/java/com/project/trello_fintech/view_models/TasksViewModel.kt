@@ -12,18 +12,20 @@ import io.reactivex.rxkotlin.cast
 
 /**
  * ViewModel для манипуляций над списком задач для каждой колонки отдельно
+ * @property retrofitClient RetrofitClient
  * @property retrofit TaskApi
  * @property tasks LinkedHashMap<Column, LiveList<Task>>
  * @property isLoading MutableLiveData<Boolean>
+ * @property onError LiveEvent<Pair<String, Int?>>
  */
-class TasksViewModel: CleanableViewModel() {
+class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewModel() {
 
     companion object {
         @JvmStatic
         val currentTaskId = MutableLiveData<String>()
     }
 
-    private val retrofit by lazy { RetrofitClient.create<TaskApi>(onError) }
+    private val retrofit by lazy { retrofitClient.create<TaskApi>(onError) }
     private val tasks = linkedMapOf<Column, LiveList<Task>>()
     var isLoading = MutableLiveData<Boolean>()
         private set
