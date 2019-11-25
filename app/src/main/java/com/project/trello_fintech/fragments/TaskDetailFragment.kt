@@ -3,6 +3,7 @@ package com.project.trello_fintech.fragments
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.ArrayAdapter
@@ -44,6 +45,7 @@ fun Toolbar.setSubtitle(loadingInfo: LiveData<MutableList<String>>) {
  * @property cleanableViewModelProvider CleanableViewModelProvider
  * @property binding ViewDataBinding
  * @property taskDetailViewModel TaskDetailViewModel
+ * @property requestPermissionsUri Uri?
  */
 class TaskDetailFragment: Fragment() {
 
@@ -61,6 +63,8 @@ class TaskDetailFragment: Fragment() {
     private val taskDetailViewModel by lazy {
         cleanableViewModelProvider.get<TaskDetailViewModel>(this)
     }
+
+    private var requestPermissionsUri: Uri? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DataBindingUtil.inflate<ViewDataBinding>(inflater, R.layout.fragment_task_detail, container, false)
@@ -111,8 +115,20 @@ class TaskDetailFragment: Fragment() {
             UPLOAD_ATTACHMENT_REQUEST -> intent?.data?.let {
                 if (cxt.checkSelfPermission(READ_EXTERNAL_STORAGE_PERM) == PackageManager.PERMISSION_GRANTED)
                     taskDetailViewModel.uploadAttachment(it)
-                else
+                else {
                     activity.requestPermissions(arrayOf(READ_EXTERNAL_STORAGE_PERM), READ_EXTERNAL_STORAGE_REQUEST)
+                    requestPermissionsUri = it
+                }
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when(requestCode) {
+            READ_EXTERNAL_STORAGE_REQUEST -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    requestPermissionsUri?.let { taskDetailViewModel.uploadAttachment(it) }
+                }
             }
         }
     }

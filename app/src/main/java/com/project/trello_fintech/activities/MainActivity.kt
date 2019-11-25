@@ -123,13 +123,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showTaskDetail(task: Task) {
+        val fragment = TaskDetailFragment().apply {
+            arguments = Bundle().apply {
+                putSerializable("task", task)
+            }
+        }
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.fragment_container, TaskDetailFragment().apply {
-                arguments = Bundle().apply {
-                    putSerializable("task", task)
-                }
-            })
+            .add(R.id.fragment_container, fragment, "taskDetail")
             .addToBackStack(null)
             .commit()
     }
@@ -155,5 +156,10 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.fragment_container, WebViewFragment())
             .addToBackStack(null)
             .commit()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        val taskDetailFragment = supportFragmentManager.findFragmentByTag("taskDetail") as TaskDetailFragment
+        taskDetailFragment.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }
