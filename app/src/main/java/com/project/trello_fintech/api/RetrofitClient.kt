@@ -11,15 +11,24 @@ import com.project.trello_fintech.utils.StringsRepository
 import com.project.trello_fintech.utils.reactive.LiveEvent
 import io.reactivex.android.schedulers.AndroidSchedulers
 import okhttp3.Cache
+import okhttp3.logging.HttpLoggingInterceptor
 
 
 /**
  * Клиент для осуществления CRUD
- * @property _retrofitBuilder Builder
+ * @property loggingInterceptor HttpLoggingInterceptor
+ * @property retrofitBuilder Builder
+ * @constructor
  */
 class RetrofitClient(cache: Cache, stringsRepository: StringsRepository) {
 
-    val _retrofitBuilder: Retrofit.Builder by lazy {
+    private val loggingInterceptor = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
+        Log.i("OkHttp", it)
+    }).apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+
+    val retrofitBuilder: Retrofit.Builder by lazy {
         val httpClient = OkHttpClient.Builder()
             .cache(cache)
             .addInterceptor {
@@ -35,10 +44,9 @@ class RetrofitClient(cache: Cache, stringsRepository: StringsRepository) {
                     .url(modifiedUrl)
                     .build()
 
-                Log.i("${request.method()} URL", modifiedUrl.toString())
-
                 it.proceed(modifiedRequest)
             }
+            .addInterceptor(loggingInterceptor)
             .build()
 
         val gson = GsonBuilder().setLenient().create()
@@ -51,7 +59,7 @@ class RetrofitClient(cache: Cache, stringsRepository: StringsRepository) {
 
     inline fun <reified T> create(onError: LiveEvent<Pair<String, Int?>>): T {
         val rxJava2Adapter = RxJava2Adapter(AndroidSchedulers.mainThread(), onError)
-        return _retrofitBuilder
+        return retrofitBuilder
             .addCallAdapterFactory(rxJava2Adapter)
             .build()
             .create(T::class.java)

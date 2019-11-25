@@ -23,6 +23,7 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.TasksAdapter
 import com.project.trello_fintech.models.Board
+import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
@@ -115,27 +116,28 @@ class TasksFragment: Fragment() {
         }
 
         for (column in selectedBoard.columns) {
-            binding.setVariable(BR.viewModel, tasksViewModel)
-
-            val tasksAdapter = TasksAdapter(column)
-
-//            lifecycle.addObserver(tasksViewModel)
-            tasksViewModel.load(column)
-
-            tasksViewModel.observe(column) {
-                tasksAdapter.itemList = it
-            }
-
-            val headerView = LayoutInflater.from(context).inflate(R.layout.task_list_header, null).apply {
-                findViewById<TextView>(R.id.task_header_title).text = column.title
-                findViewById<ImageButton>(R.id.add_task).setOnClickListener {
-                    tasksViewModel.add(column, Task())
-                }
-            }
-
-            boardView.addColumn(tasksAdapter, headerView, null, false)
+            processTaskListItem(column)
         }
 
         (activity as AppCompatActivity).supportActionBar?.title = selectedBoard.title
+    }
+
+    private fun processTaskListItem(column: Column) {
+        binding.setVariable(BR.viewModel, tasksViewModel)
+
+        val tasksAdapter = TasksAdapter(column, tasksViewModel, maxAttachmentsPreviewNum = 2)
+        tasksViewModel.load(column)
+        tasksViewModel.observe(column) {
+            tasksAdapter.itemList = it
+        }
+
+        val headerView = LayoutInflater.from(context).inflate(R.layout.task_list_header, null).apply {
+            findViewById<TextView>(R.id.task_header_title).text = column.title
+            findViewById<ImageButton>(R.id.add_task).setOnClickListener {
+                tasksViewModel.add(column, Task())
+            }
+        }
+
+        boardView.addColumn(tasksAdapter, headerView, null, false)
     }
 }

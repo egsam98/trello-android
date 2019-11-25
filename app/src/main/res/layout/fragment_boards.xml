@@ -28,21 +28,7 @@
                     app:layout_constraintHorizontal_bias="1.0" app:layout_constraintVertical_bias="1.0"/>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:id="@+id/add_board"
-                android:layout_gravity="end|bottom"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="8dp" app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintHorizontal_bias="0.977"
-                android:src="@android:drawable/ic_input_add"
-                app:backgroundTint="@color/colorGreenDark"
-                android:tint="@color/colorWhite"/>
+        <include layout="@layout/add_button" android:id="@+id/add_board" />
 
         <com.project.trello_fintech.views.CircularProgressBar
                 android:id="@+id/progressBar"

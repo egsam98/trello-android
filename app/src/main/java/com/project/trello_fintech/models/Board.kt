@@ -55,8 +55,6 @@ data class Board(
         @SerializedName("backgroundImageScaled") val imageUrls: Array<ImageUrl>?
     ): Serializable {
 
-        data class ImageUrl(@SerializedName("url") val url: String): Serializable
-
         fun fromHexColor(): Bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888).apply {
             eraseColor(Color.parseColor(hexColor))
         }

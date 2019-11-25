@@ -5,10 +5,7 @@ import com.project.trello_fintech.di.modules.MainActivityModule
 import com.project.trello_fintech.di.modules.TrelloApiModule
 import com.project.trello_fintech.di.modules.ViewModelsModule
 import com.project.trello_fintech.di.scopes.MainActivityScope
-import com.project.trello_fintech.fragments.AddBoardDialogFragment
-import com.project.trello_fintech.fragments.BoardsFragment
-import com.project.trello_fintech.fragments.TasksFragment
-import com.project.trello_fintech.fragments.WebViewFragment
+import com.project.trello_fintech.fragments.*
 import dagger.Subcomponent
 
 
@@ -28,4 +25,5 @@ interface MainActivityComponent {
     fun inject(fragment: TasksFragment)
     fun inject(fragment: AddBoardDialogFragment)
     fun inject(fragment: WebViewFragment)
+    fun inject(fragment: TaskDetailFragment)
 }

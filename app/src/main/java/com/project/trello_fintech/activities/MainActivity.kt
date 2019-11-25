@@ -13,14 +13,14 @@ import com.project.trello_fintech.Application
 import com.project.trello_fintech.R
 import com.project.trello_fintech.di.components.MainActivityComponent
 import com.project.trello_fintech.di.modules.MainActivityModule
-import com.project.trello_fintech.fragments.TasksFragment
-import com.project.trello_fintech.fragments.BoardsFragment
-import com.project.trello_fintech.fragments.WebViewFragment
+import com.project.trello_fintech.fragments.*
 import com.project.trello_fintech.models.Board
+import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.view_models.BoardsViewModel
 import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.project.trello_fintech.utils.StringsRepository
+import com.project.trello_fintech.view_models.TaskDetailViewModel
 import javax.inject.Inject
 
 
@@ -41,6 +41,10 @@ class MainActivity : AppCompatActivity() {
 
     private val tasksViewModel by lazy {
         cleanableViewModelProvider.get<TasksViewModel>(this)
+    }
+
+    private val taskDetailViewModel by lazy {
+        cleanableViewModelProvider.get<TaskDetailViewModel>(this)
     }
 
     private lateinit var drawerLayout: DrawerLayout
@@ -66,7 +70,15 @@ class MainActivity : AppCompatActivity() {
             showTasks(it)
         })
 
-        for (onError in arrayOf(boardsViewModel.onError, tasksViewModel.onError)) {
+        tasksViewModel.onClick.observe(this, Observer {
+            showTaskDetail(it)
+        })
+
+        taskDetailViewModel.onAttachmentClick.observe(this, Observer {
+            showAttachmentFullScreen(it)
+        })
+
+        for (onError in arrayOf(boardsViewModel.onError, tasksViewModel.onError, taskDetailViewModel.onError)) {
             onError.observe(this@MainActivity, Observer {(msg, code) ->
                 if ((msg.contains("token") || code == 401) && (savedInstanceState == null))
                     openWebViewForToken()
@@ -105,6 +117,30 @@ class MainActivity : AppCompatActivity() {
             .beginTransaction()
             .add(R.id.fragment_container, TasksFragment().apply {
                 arguments = Bundle().apply { putSerializable("board", board) }
+            })
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun showTaskDetail(task: Task) {
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.fragment_container, TaskDetailFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable("task", task)
+                }
+            })
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun showAttachmentFullScreen(attachment: Task.Attachment) {
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.fragment_container, AttachmentFullScreenFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable("attachment", attachment)
+                }
             })
             .addToBackStack(null)
             .commit()

@@ -1,8 +1,6 @@
 package com.project.trello_fintech.view_models
 
-import androidx.databinding.ObservableArrayList
 import androidx.lifecycle.*
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.project.trello_fintech.api.BoardApi
 import com.project.trello_fintech.api.RetrofitClient
 import com.project.trello_fintech.api.CategoryApi
@@ -117,11 +115,4 @@ class BoardsViewModel(private val retrofitClient: RetrofitClient): CleanableView
     fun getAllCategories() = categoryRetrofit.findAllAvailable()
         .map { it.toMutableList().apply { add(0, Board.Category.default()) } }
         .observeOn(AndroidSchedulers.mainThread())
-}
-
-
-fun <T>ObservableArrayList<T>.move(source: T, target: T) {
-    val targetIndex = this.indexOf(target)
-    this.remove(source)
-    this.add(targetIndex, source)
 }
