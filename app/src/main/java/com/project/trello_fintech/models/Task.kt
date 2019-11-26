@@ -9,12 +9,16 @@ import kotlin.random.Random
  * Задача - элементарная структура (класс) проекта
  * @property text String
  * @property id String
+ * @property trelloPos String позиция в списке trello, представляет число с плавающей точкой либо "bottom", "top"
  * @property attachments List<Attachment>
  */
 data class Task(
         @SerializedName("name") val text: String = randomString(),
         @SerializedName("id") val id: String = ""
     ): Serializable {
+
+    @SerializedName("pos")
+    var trelloPos: String = "bottom"
 
     var attachments: List<Attachment> = listOf()
 

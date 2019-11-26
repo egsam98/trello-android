@@ -8,6 +8,8 @@ import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.reactive.LiveEvent
 import com.project.trello_fintech.utils.reactive.LiveList
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 
 
 /**
@@ -72,11 +74,38 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
         currentTaskId.value = tasks.getValue(column)[pos].id
     }
 
-    fun onItemDragEnded(column: Column, newPos: Int) {
-        tasks.getValue(column).data.find { it.id == currentTaskId.value }?.let {
-            taskRetrofit.updateColumn(it.id, column.id, newPos.toString()).subscribe()
+    fun onItemDragEnded(fromColumn: Column, toColumn: Column, toRow: Int) {
+        tasks.getValue(toColumn).data.find { it.id == currentTaskId.value }?.let { task ->
+            Observable.just(
+                    tasks.getValue(fromColumn).data,
+                    tasks.getValue(toColumn).data.minus(task)
+                )
+                .flatMap {
+                    Observable.fromCallable { checkAndUpdatePositions(it) }
+                        .subscribeOn(Schedulers.newThread())
+                }
+                .subscribe()
+
+            taskRetrofit.updateColumn(task.id, toColumn.id, (toRow + 1).toString()).subscribe { updatedTask ->
+                task.trelloPos = updatedTask.trelloPos
+            }
+            currentTaskId.value = null
         }
-        currentTaskId.value = null
+    }
+
+    private fun checkAndUpdatePositions(columnData: List<Task>) {
+        columnData.forEachIndexed { index, task ->
+            val trelloPosF = when (task.trelloPos) {
+                "top" -> 0f
+                "bottom" -> columnData.lastIndex.toFloat()
+                else -> task.trelloPos.toFloat()
+            }
+            if (trelloPosF != index + 1f) {
+                taskRetrofit.updatePos(task.id, (index + 1).toString()).subscribe { updatedTask ->
+                    task.trelloPos = updatedTask.trelloPos
+                }
+            }
+        }
     }
 
     private fun removeById(column: Column, id: String) {

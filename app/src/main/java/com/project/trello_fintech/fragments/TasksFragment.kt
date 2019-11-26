@@ -91,8 +91,9 @@ class TasksFragment: Fragment() {
                 }
 
                 override fun onItemDragEnded(fromColumn: Int, fromRow: Int, toColumn: Int, toRow: Int) {
-                    val adapter = this@apply.getAdapter(toColumn) as TasksAdapter
-                    tasksViewModel.onItemDragEnded(adapter.column, toRow)
+                    val fromAdapter = this@apply.getAdapter(fromColumn) as TasksAdapter
+                    val toAdapter = this@apply.getAdapter(toColumn) as TasksAdapter
+                    tasksViewModel.onItemDragEnded(fromAdapter.column, toAdapter.column, toRow)
                 }
             })
         }
