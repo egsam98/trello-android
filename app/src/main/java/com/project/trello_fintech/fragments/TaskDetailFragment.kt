@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
@@ -108,6 +109,23 @@ class TaskDetailFragment: Fragment() {
             }
             startActivityForResult(intent, UPLOAD_ATTACHMENT_REQUEST)
         })
+
+        view.findViewById<TextInputEditText>(R.id.description).apply {
+            val originalDrawable = background
+            background = null
+            setOnFocusChangeListener { _, isFocused ->
+                val drawable = when (isFocused) {
+                    true -> originalDrawable
+                    false -> null
+                }
+                background = drawable
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        taskDetailViewModel.updateDescription()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {

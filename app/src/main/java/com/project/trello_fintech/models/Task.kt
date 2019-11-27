@@ -20,6 +20,9 @@ data class Task(
     @SerializedName("pos")
     var trelloPos: String = "bottom"
 
+    @SerializedName("desc")
+    var description: String = ""
+
     var attachments: List<Attachment> = listOf()
 
     enum class AttachmentType {

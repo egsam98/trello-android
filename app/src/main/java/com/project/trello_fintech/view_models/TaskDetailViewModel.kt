@@ -22,16 +22,17 @@ import java.io.IOException
 import java.io.InputStream
 import java.lang.IllegalArgumentException
 import com.project.trello_fintech.R
+import com.project.trello_fintech.api.TaskApi
 
 
 /**
  * ViewModel для манипуляций над выбранной задачей
  * @property cxt Context
  * @property retrofitClient RetrofitClient
- * @property taskId String
- * @property taskText String
+ * @property task Task
  * @property attachments LiveList<Attachment>
  * @property attachmentRetrofit TaskAttachmentApi
+ * @property taskRetrofit TaskApi
  * @property onError LiveEvent<Pair<String, Int?>>
  * @property onAttachmentClick LiveEvent<Attachment>
  * @property actionsTitle Array<String>
@@ -39,13 +40,14 @@ import com.project.trello_fintech.R
  */
 class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: RetrofitClient): CleanableViewModel() {
 
-    private var taskId = ""
-    var taskText = ""
-        private set
+    lateinit var task: Task
     private val attachments = LiveList<Task.Attachment>()
 
     private val attachmentRetrofit by lazy {
         retrofitClient.create<TaskAttachmentApi>(onError)
+    }
+    private val taskRetrofit by lazy {
+        retrofitClient.create<TaskApi>(onError)
     }
 
     val onError = LiveEvent<Pair<String, Int?>>()
@@ -55,8 +57,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     val actions = arrayOf(LiveEvent<Unit>(), null, null)
 
     fun attachTask(task: Task) {
-        taskId = task.id
-        taskText = task.text
+        this.task = task
         attachments.data = task.attachments.toMutableList()
     }
 
@@ -88,7 +89,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
                 onError.emit(Pair(e.message?: e.toString(), null))
                 return
             }
-            attachmentRetrofit.create(taskId, mimeType, part)
+            attachmentRetrofit.create(task.id, mimeType, part)
                 .doOnSubscribe {
                     Toast.makeText(cxt, "Загрузка файла началась, не закрывайте приложение", Toast.LENGTH_LONG).show()
                 }
@@ -120,7 +121,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
             .setContentText("Результат загрузки вложения")
             .setDefaults(Notification.DEFAULT_ALL)
             .setStyle(NotificationCompat.BigTextStyle()
-                .bigText("Вложение ${attachment.name} успешно загружено в задачу $taskText\n" +
+                .bigText("Вложение ${attachment.name} успешно загружено в задачу ${task.text}\n" +
                         "Зайдите в приложение, чтобы проверить"))
             .setContentIntent(returnToAppIntent)
             .setAutoCancel(true)
@@ -130,7 +131,11 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     }
 
     fun removeAttachment(attachment: Task.Attachment) {
-        attachmentRetrofit.delete(taskId, attachment.id).subscribe()
+        attachmentRetrofit.delete(task.id, attachment.id).subscribe()
         attachments.remove(attachment)
+    }
+
+    fun updateDescription() {
+        taskRetrofit.updateDescription(task.id, task.description).subscribe()
     }
 }

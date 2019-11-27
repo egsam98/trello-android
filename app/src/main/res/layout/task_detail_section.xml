@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       tools:parentTag="com.project.trello_fintech.views.TaskDetailSectionView"
+       xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <LinearLayout
+            android:orientation="horizontal"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content">
+        <ImageView
+                android:id="@+id/icon"
+                android:padding="5dp"
+                android:layout_width="45dp" android:layout_height="45dp" />
+        <TextView
+                android:id="@+id/text"
+                android:textColor="@color/colorBlack"
+                android:layout_gravity="center_vertical"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:layout_width="match_parent" android:layout_height="wrap_content" />
+    </LinearLayout>
+</merge>

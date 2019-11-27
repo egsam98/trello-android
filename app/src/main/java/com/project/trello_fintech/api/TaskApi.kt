@@ -20,6 +20,9 @@ interface TaskApi {
     @PUT("cards/{id}")
     fun updatePos(@Path("id") id: String, @Query("pos") pos: String): Single<Task>
 
+    @PUT("cards/{id}")
+    fun updateDescription(@Path("id") id: String, @Query("desc") description: String): Single<Task>
+
     @DELETE("cards/{id}")
     fun delete(@Path("id") id: String): Completable
 }
