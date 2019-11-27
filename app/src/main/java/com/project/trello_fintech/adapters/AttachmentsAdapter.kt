@@ -14,6 +14,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.project.trello_fintech.R
+import com.project.trello_fintech.adapters.utils.ViewHolderStrategy
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import java.lang.IllegalArgumentException
@@ -34,8 +35,8 @@ class AttachmentsAdapter(private val taskDetailViewModel: TaskDetailViewModel):
         }
 
     private fun getStrategy(viewType: Int) = when (viewType) {
-        1 -> ImageStrategy
-        0 -> NonImageStrategy
+        1 -> ImageStrategy(taskDetailViewModel)
+        0 -> NonImageStrategy(taskDetailViewModel)
         else -> throw IllegalArgumentException("View type must be any of: 0, 1")
     }
 
@@ -44,7 +45,7 @@ class AttachmentsAdapter(private val taskDetailViewModel: TaskDetailViewModel):
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        getStrategy(getItemViewType(position)).onBindViewHolder(holder, taskDetailViewModel, data[position])
+        getStrategy(getItemViewType(position)).onBindViewHolder(holder, data[position])
     }
 
     override fun getItemViewType(position: Int): Int = data[position].isImage().toInt()
@@ -53,15 +54,8 @@ class AttachmentsAdapter(private val taskDetailViewModel: TaskDetailViewModel):
     private fun Boolean.toInt() = if (this) 1 else 0
 }
 
-/**
- * В зависимости от ItemViewType используется определенный ViewHolder - реализуется стратегия
- */
-interface AttachmentViewHolderStrategy {
-    fun onCreateViewHolder(parent: ViewGroup): RecyclerView.ViewHolder
-    fun onBindViewHolder(holder: RecyclerView.ViewHolder, taskDetailViewModel: TaskDetailViewModel, attachment: Task.Attachment)
-}
 
-object ImageStrategy: AttachmentViewHolderStrategy {
+class ImageStrategy(private val taskDetailViewModel: TaskDetailViewModel): ViewHolderStrategy<Task.Attachment> {
 
     class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.findViewById(R.id.attachment)
@@ -73,11 +67,11 @@ object ImageStrategy: AttachmentViewHolderStrategy {
         return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, taskDetailViewModel: TaskDetailViewModel, attachment: Task.Attachment) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, item: Task.Attachment) {
         with(holder as ViewHolder) {
             Glide.with(imageView.context)
                 .asBitmap()
-                .load(attachment.getImageUrl(Task.AttachmentType.MEDIUM))
+                .load(item.getImageUrl(Task.AttachmentType.MEDIUM))
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(object : CustomTarget<Bitmap>() {
                     override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
@@ -88,12 +82,12 @@ object ImageStrategy: AttachmentViewHolderStrategy {
                 })
 
             imageView.setOnClickListener {
-                taskDetailViewModel.onAttachmentClick.emit(attachment)
+                taskDetailViewModel.onAttachmentClick.emit(item)
             }
 
             actions.setOnMenuItemClickListener {
                 when (it.itemId) {
-                    R.id.delete_attachment -> taskDetailViewModel.removeAttachment(attachment)
+                    R.id.delete_attachment -> taskDetailViewModel.removeAttachment(item)
                 }
                 true
             }
@@ -101,7 +95,7 @@ object ImageStrategy: AttachmentViewHolderStrategy {
     }
 }
 
-object NonImageStrategy: AttachmentViewHolderStrategy {
+class NonImageStrategy(private val taskDetailViewModel: TaskDetailViewModel): ViewHolderStrategy<Task.Attachment> {
 
     class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val actions: Toolbar = view.findViewById(R.id.attachment_actions)
@@ -113,13 +107,13 @@ object NonImageStrategy: AttachmentViewHolderStrategy {
         return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, taskDetailViewModel: TaskDetailViewModel, attachment: Task.Attachment) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, item: Task.Attachment) {
         with(holder as ViewHolder) {
-            textView.text = attachment.name
+            textView.text = item.name
 
             actions.setOnMenuItemClickListener {
                 when (it.itemId) {
-                    R.id.delete_attachment -> taskDetailViewModel.removeAttachment(attachment)
+                    R.id.delete_attachment -> taskDetailViewModel.removeAttachment(item)
                 }
                 true
             }

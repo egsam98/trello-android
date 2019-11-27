@@ -11,6 +11,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.project.trello_fintech.R
+import com.project.trello_fintech.adapters.utils.ViewHolderStrategy
 import com.project.trello_fintech.listeners.BoardsChangeCallback
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.IListItem
@@ -48,15 +49,7 @@ class BoardsAdapter(private val viewModel: BoardsViewModel): RecyclerView.Adapte
     override fun getItemCount() = differ.currentList.size
 }
 
-/**
- * В зависимости от ItemViewType используется определенный ViewHolder - реализуется стратегия
- */
-interface ViewHolderStrategy {
-    fun onCreateViewHolder(parent: ViewGroup): RecyclerView.ViewHolder
-    fun onBindViewHolder(holder: RecyclerView.ViewHolder, item: IListItem)
-}
-
-class BoardStrategy(private val viewModel: BoardsViewModel): ViewHolderStrategy {
+class BoardStrategy(private val viewModel: BoardsViewModel): ViewHolderStrategy<IListItem> {
 
     class ViewHolder(val view: View): RecyclerView.ViewHolder(view) {
         lateinit var board: Board
@@ -88,7 +81,7 @@ class BoardStrategy(private val viewModel: BoardsViewModel): ViewHolderStrategy 
     }
 }
 
-object CategoryStrategy: ViewHolderStrategy {
+object CategoryStrategy: ViewHolderStrategy<IListItem> {
 
     class ViewHolder(val textView: TextView): RecyclerView.ViewHolder(textView)
 
@@ -108,7 +101,7 @@ object CategoryStrategy: ViewHolderStrategy {
 /**
  * Для пустого списка
  */
-object NothingStrategy: ViewHolderStrategy {
+object NothingStrategy: ViewHolderStrategy<IListItem> {
 
     class ViewHolder(val textView: TextView): RecyclerView.ViewHolder(textView)
 
