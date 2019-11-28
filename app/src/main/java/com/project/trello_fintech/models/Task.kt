@@ -1,7 +1,10 @@
 package com.project.trello_fintech.models
 
+import android.text.Html
+import android.text.Spanned
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
+import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.random.Random
 
@@ -32,13 +35,13 @@ data class Task(
     data class Attachment(
         @SerializedName("id") val id: String,
         @SerializedName("name") val name: String,
-        @SerializedName("mimeType") private val mimeType: String,
+        @SerializedName("mimeType") private val mimeType: String?,
         @SerializedName("date") val date: Date,
         @SerializedName("previews") private val imageUrls: Array<ImageUrl>?,
         @SerializedName("url") val url: String
     ): Serializable {
 
-        fun isImage() = mimeType.startsWith("image/")
+        fun isImage() = mimeType?.startsWith("image/")?: false
 
         fun getImageUrl(attachmentType: AttachmentType): String? {
             require(isImage()) {
@@ -50,6 +53,32 @@ data class Task(
                 AttachmentType.LARGE -> url
             }
         }
+    }
+
+    data class History(
+        @SerializedName("data") val data: Data,
+        @SerializedName("type") val type: String,
+        @SerializedName("date") val date: Date,
+        @SerializedName("memberCreator") val creator: User
+    ) {
+
+        data class Data(
+            @SerializedName("card") val task: Task?,
+            @SerializedName("attachment") val attachment: Attachment?,
+            @SerializedName("member") val member: User?
+        )
+
+        val message : Spanned
+            get() {
+                val creatorText = "<b>${creator.fullname}</b>"
+                val html = when {
+                    data.attachment != null -> "$creatorText добавил вложение <b>${data.attachment.name}</b>"
+                    data.member != null -> "$creatorText добавил нового участника <b>${data.member.fullname}</b>"
+                    data.task != null -> "$creatorText обновил описание задачи: <b>${data.task.description}</b>"
+                    else -> throw IllegalArgumentException("Неизвестный тип истории изменения")
+                }
+                return Html.fromHtml(html)
+            }
     }
 }
 

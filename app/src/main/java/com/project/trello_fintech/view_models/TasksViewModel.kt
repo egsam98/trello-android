@@ -20,7 +20,7 @@ import io.reactivex.schedulers.Schedulers
  * @property tasks LinkedHashMap<Column, LiveList<Task>>
  * @property isLoading MutableLiveData<Boolean>
  * @property onError LiveEvent<Pair<String, Int?>>
- * @property onClick LiveEvent<Task>
+ * @property onClick LiveEvent<String>
  */
 class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewModel() {
 
@@ -36,7 +36,7 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
         private set
 
     val onError = LiveEvent<Pair<String, Int?>>()
-    val onClick = LiveEvent<Task>()
+    val onClick = LiveEvent<String>()
 
     fun load(column: Column) {
         tasks[column] = LiveList()

@@ -2,7 +2,7 @@ package com.project.trello_fintech.utils.reactive
 
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.subjects.BehaviorSubject
 import java.io.Serializable
 
 
@@ -13,7 +13,7 @@ import java.io.Serializable
  * @property data MutableList<T>
  */
 class LiveList<T: Serializable> {
-    private val observable = PublishSubject.create<MutableList<T>>()
+    private val observable = BehaviorSubject.create<MutableList<T>>()
 
     var data = mutableListOf<T>()
         set(list) {

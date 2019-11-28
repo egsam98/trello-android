@@ -26,4 +26,5 @@ interface MainActivityComponent {
     fun inject(fragment: AddBoardDialogFragment)
     fun inject(fragment: WebViewFragment)
     fun inject(fragment: TaskDetailFragment)
+    fun inject(fragment: TaskHistoryFragment)
 }

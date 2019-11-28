@@ -10,4 +10,5 @@
     <string name="trello_logout">Выйти из Trello аккаунта</string>
     <string name="attachments">Вложения</string>
     <string name="no_description">Нет описания</string>
+    <string name="changes_history">История изменений</string>
 </resources>

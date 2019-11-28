@@ -17,12 +17,14 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.MutableLiveData
 import com.project.trello_fintech.activities.MainActivity
 import java.io.IOException
 import java.io.InputStream
 import java.lang.IllegalArgumentException
 import com.project.trello_fintech.R
 import com.project.trello_fintech.api.TaskApi
+import com.project.trello_fintech.api.TaskHistoryApi
 
 
 /**
@@ -33,14 +35,17 @@ import com.project.trello_fintech.api.TaskApi
  * @property attachments LiveList<Attachment>
  * @property attachmentRetrofit TaskAttachmentApi
  * @property taskRetrofit TaskApi
+ * @property historyRetrofit TaskHistoryApi
  * @property onError LiveEvent<Pair<String, Int?>>
  * @property onAttachmentClick LiveEvent<Attachment>
+ * @property onOpenHistory LiveEvent<Unit>
  * @property actionsTitle Array<String>
  * @property actions Array<LiveEvent<Unit>?>
+ * @property historyList MutableLiveData<List<History>>
  */
 class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: RetrofitClient): CleanableViewModel() {
 
-    lateinit var task: Task
+    var task: Task = Task()
     private val attachments = LiveList<Task.Attachment>()
 
     private val attachmentRetrofit by lazy {
@@ -49,16 +54,30 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     private val taskRetrofit by lazy {
         retrofitClient.create<TaskApi>(onError)
     }
+    private val historyRetrofit by lazy {
+        retrofitClient.create<TaskHistoryApi>(onError)
+    }
 
     val onError = LiveEvent<Pair<String, Int?>>()
     val onAttachmentClick = LiveEvent<Task.Attachment>()
+    val onOpenHistory = LiveEvent<Unit>()
 
     val actionsTitle = arrayOf("Загрузить вложение", "Array item one", "Array item two")
     val actions = arrayOf(LiveEvent<Unit>(), null, null)
+    val historyList = MutableLiveData<List<Task.History>>()
+    val isLoading = MutableLiveData<Boolean>(false)
 
-    fun attachTask(task: Task) {
-        this.task = task
-        attachments.data = task.attachments.toMutableList()
+    fun attachTask(id: String) {
+        val disposable = taskRetrofit.findById(id)
+            .doOnSubscribe { isLoading.value = true }
+            .doOnSuccess { isLoading.value = false }
+            .subscribe { task ->
+                attachmentRetrofit.findAllByTaskId(id).subscribe { attachments ->
+                    this.attachments.data = attachments.toMutableList()
+                }
+                this.task = task
+            }
+        clearOnDestroy(disposable)
     }
 
     fun observeAttachments(subscribe: (MutableList<Task.Attachment>) -> Unit) {
@@ -132,10 +151,22 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
 
     fun removeAttachment(attachment: Task.Attachment) {
         attachmentRetrofit.delete(task.id, attachment.id).subscribe()
-        attachments.remove(attachment)
+        attachments remove attachment
     }
 
     fun updateDescription() {
         taskRetrofit.updateDescription(task.id, task.description).subscribe()
+    }
+
+    fun showHistory() {
+        val filterActions = "addAttachmentToCard,createCard,addMemberToCard,updateCard:desc"
+        val disposable = historyRetrofit.findAllByTaskId(task.id, filterActions)
+            .doOnSubscribe { isLoading.value = true }
+            .doOnSuccess { isLoading.value = false }
+            .subscribe { historyList ->
+                this.historyList.value = historyList
+                onOpenHistory.emit()
+            }
+        clearOnDestroy(disposable)
     }
 }

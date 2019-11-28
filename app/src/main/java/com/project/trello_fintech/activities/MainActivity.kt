@@ -77,6 +77,10 @@ class MainActivity : AppCompatActivity() {
         taskDetailViewModel.onAttachmentClick.observe(this, Observer {
             showAttachmentFullScreen(it)
         })
+        taskDetailViewModel.onOpenHistory.observe(this, Observer {
+            showTaskHistory()
+        })
+
 
         for (onError in arrayOf(boardsViewModel.onError, tasksViewModel.onError, taskDetailViewModel.onError)) {
             onError.observe(this@MainActivity, Observer {(msg, code) ->
@@ -122,10 +126,10 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    private fun showTaskDetail(task: Task) {
+    private fun showTaskDetail(taskId: String) {
         val fragment = TaskDetailFragment().apply {
             arguments = Bundle().apply {
-                putSerializable("task", task)
+                putSerializable("taskId", taskId)
             }
         }
         supportFragmentManager
@@ -143,6 +147,13 @@ class MainActivity : AppCompatActivity() {
                     putSerializable("attachment", attachment)
                 }
             })
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun showTaskHistory() {
+        supportFragmentManager.beginTransaction()
+            .add(R.id.fragment_container, TaskHistoryFragment())
             .addToBackStack(null)
             .commit()
     }

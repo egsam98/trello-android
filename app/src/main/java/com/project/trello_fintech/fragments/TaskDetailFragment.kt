@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.ArrayAdapter
+import android.widget.Button
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -22,7 +23,6 @@ import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.AttachmentsAdapter
-import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.project.trello_fintech.views.DropDownListView
@@ -59,6 +59,8 @@ class TaskDetailFragment: Fragment() {
     @Inject
     lateinit var cleanableViewModelProvider: CleanableViewModelProvider
 
+    lateinit var attachmentsAdapter: AttachmentsAdapter
+
     private lateinit var binding: ViewDataBinding
 
     private val taskDetailViewModel by lazy {
@@ -75,14 +77,10 @@ class TaskDetailFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         MainActivity.component.inject(this)
+        arguments?.getString("taskId")?.let { taskDetailViewModel.attachTask(it) }
         binding.setVariable(BR.viewModel, taskDetailViewModel)
 
-        val attachmentsAdapter = AttachmentsAdapter(taskDetailViewModel)
-        taskDetailViewModel.observeAttachments {
-            attachmentsAdapter.data = it
-        }
-
-        taskDetailViewModel.attachTask(arguments?.getSerializable("task") as Task)
+        attachmentsAdapter = AttachmentsAdapter(taskDetailViewModel)
 
         view.findViewById<RecyclerView>(R.id.attachments).apply {
             layoutManager = FlexboxLayoutManager(cxt, FlexDirection.ROW).apply {
@@ -109,6 +107,9 @@ class TaskDetailFragment: Fragment() {
             }
             startActivityForResult(intent, UPLOAD_ATTACHMENT_REQUEST)
         })
+        taskDetailViewModel.observeAttachments {
+            attachmentsAdapter.data = it
+        }
 
         view.findViewById<TextInputEditText>(R.id.description).apply {
             val originalDrawable = background
@@ -119,6 +120,12 @@ class TaskDetailFragment: Fragment() {
                     false -> null
                 }
                 background = drawable
+            }
+        }
+
+        view.findViewById<Button>(R.id.task_history).apply {
+            setOnClickListener {
+                taskDetailViewModel.showHistory()
             }
         }
     }

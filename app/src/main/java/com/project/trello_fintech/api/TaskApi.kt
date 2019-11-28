@@ -9,6 +9,9 @@ interface TaskApi {
     @GET("list/{id}/cards")
     fun findAllByColumnId(@Path("id") id: String): Single<List<Task>>
 
+    @GET("cards/{id}")
+    fun findById(@Path("id") id: String): Single<Task>
+
     @POST("cards/")
     fun create(@Body task: Task, @Query("idList") idList: String): Single<Task>
 

@@ -52,7 +52,7 @@ class AvatarView(cxt: Context, attrsSet: AttributeSet): AppCompatImageView(cxt, 
 
         user?.run {
             if (avatar == null) {
-                drawDefaultImage(fullname[0], canvas) // Передается первая буква имени
+                drawDefaultImage(initials, canvas) // Передается первая буква имени
                 return
             }
             if (userAvatar != avatar || avatarSize != size) {
@@ -66,17 +66,17 @@ class AvatarView(cxt: Context, attrsSet: AttributeSet): AppCompatImageView(cxt, 
 
     /**
      * В случае отсутствия аватара пользователя
-     * @param letter Char
+     * @param initials String
      * @param canvas Canvas
      */
-    private fun drawDefaultImage(letter: Char, canvas: Canvas) {
+    private fun drawDefaultImage(initials: String, canvas: Canvas) {
         val radius = size / 2f
         with(paint) {
             color = Color.parseColor(DEFAULT_BACKGROUND_COLOR)
             canvas.drawCircle(startX + radius, startY + radius, radius, this)
 
             color = Color.WHITE
-            canvas.drawText(letter.toString().capitalize(), startX + radius - TEXT_SIZE / 3, startY + radius + TEXT_SIZE / 3, this)
+            canvas.drawText(initials, startX + radius - TEXT_SIZE / 3 * 1.75f, startY + radius + TEXT_SIZE / 3, this)
         }
     }
 
