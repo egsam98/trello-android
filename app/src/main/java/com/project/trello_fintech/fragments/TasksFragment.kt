@@ -57,12 +57,10 @@ class TasksFragment: Fragment() {
      */
     inner class DeletableDragItem(context: Context, layoutId: Int): DragItem(context, layoutId) {
         override fun onEndDragAnimation(dragView: View) {
-            TasksViewModel.currentTaskId.value?.let {
-                val lowerBorder = boardView.height - bucket.height - dragView.height
-                if (dragView.y > lowerBorder) {
-                    dragView.visibility = View.GONE
-                    tasksViewModel.removeFromAllColumnsById(it)
-                }
+            val lowerBorder = boardView.height - bucket.height - dragView.height
+            if (dragView.y > lowerBorder) {
+                dragView.visibility = View.GONE
+                tasksViewModel.removeFromAllColumnsById()
             }
         }
     }

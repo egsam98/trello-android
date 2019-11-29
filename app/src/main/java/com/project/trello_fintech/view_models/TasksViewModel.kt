@@ -75,22 +75,23 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
     }
 
     fun onItemDragEnded(fromColumn: Column, toColumn: Column, toRow: Int) {
-        tasks.getValue(toColumn).data.find { it.id == currentTaskId.value }?.let { task ->
-            Observable.just(
-                    tasks.getValue(fromColumn).data,
-                    tasks.getValue(toColumn).data.minus(task)
-                )
-                .flatMap {
-                    Observable.fromCallable { checkAndUpdatePositions(it) }
-                        .subscribeOn(Schedulers.newThread())
+        val currentTask = currentTaskId.value?.let {
+            tasks.getValue(toColumn)[toRow].apply {
+                taskRetrofit.updateColumn(it, toColumn.id, (toRow + 1).toString()).subscribe { updatedTask ->
+                    trelloPos = updatedTask.trelloPos
                 }
-                .subscribe()
-
-            taskRetrofit.updateColumn(task.id, toColumn.id, (toRow + 1).toString()).subscribe { updatedTask ->
-                task.trelloPos = updatedTask.trelloPos
+                currentTaskId.value = null
             }
-            currentTaskId.value = null
         }
+        Observable.just(
+                tasks.getValue(fromColumn).data,
+                tasks.getValue(toColumn).data.minus(currentTask).filterNotNull()
+            )
+            .flatMap {
+                Observable.fromCallable { checkAndUpdatePositions(it) }
+                    .subscribeOn(Schedulers.computation())
+            }
+            .subscribe()
     }
 
     private fun checkAndUpdatePositions(columnData: List<Task>) {
@@ -115,9 +116,12 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
         }
     }
 
-    fun removeFromAllColumnsById(id: String) {
-        for (column in tasks.keys) {
-            removeById(column, id)
+    fun removeFromAllColumnsById() {
+        currentTaskId.value?.let {
+            for (column in tasks.keys) {
+                removeById(column, it)
+            }
+            currentTaskId.value = null
         }
     }
 }
