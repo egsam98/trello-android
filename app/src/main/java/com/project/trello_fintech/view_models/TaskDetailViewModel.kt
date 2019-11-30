@@ -45,7 +45,7 @@ import com.project.trello_fintech.api.TaskHistoryApi
  */
 class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: RetrofitClient): CleanableViewModel() {
 
-    var task: Task = Task()
+    var task = MutableLiveData<Task>(Task())
     private val attachments = LiveList<Task.Attachment>()
 
     private val attachmentRetrofit by lazy {
@@ -75,7 +75,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
                 attachmentRetrofit.findAllByTaskId(id).subscribe { attachments ->
                     this.attachments.data = attachments.toMutableList()
                 }
-                this.task = task
+                this.task.value = task
             }
         clearOnDestroy(disposable)
     }
@@ -108,14 +108,18 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
                 onError.emit(Pair(e.message?: e.toString(), null))
                 return
             }
-            attachmentRetrofit.create(task.id, mimeType, part)
+
+            val observable = attachmentRetrofit.create(task.value!!.id, mimeType, part)
+                .toObservable()
                 .doOnSubscribe {
                     Toast.makeText(cxt, "Загрузка файла началась, не закрывайте приложение", Toast.LENGTH_LONG).show()
                 }
-                .subscribe { attachment ->
-                    sendReadyNotification(attachment)
-                    attachments add attachment
-                }
+                .share()
+            observable.subscribe { sendReadyNotification(it) }
+            val disposable = observable.subscribe { attachment ->
+                attachments add attachment
+            }
+            clearOnDestroy(disposable)
         }
     }
 
@@ -140,7 +144,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
             .setContentText("Результат загрузки вложения")
             .setDefaults(Notification.DEFAULT_ALL)
             .setStyle(NotificationCompat.BigTextStyle()
-                .bigText("Вложение ${attachment.name} успешно загружено в задачу ${task.text}\n" +
+                .bigText("Вложение ${attachment.name} успешно загружено в задачу ${task.value!!.text}\n" +
                         "Зайдите в приложение, чтобы проверить"))
             .setContentIntent(returnToAppIntent)
             .setAutoCancel(true)
@@ -150,17 +154,17 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     }
 
     fun removeAttachment(attachment: Task.Attachment) {
-        attachmentRetrofit.delete(task.id, attachment.id).subscribe()
+        attachmentRetrofit.delete(task.value!!.id, attachment.id).subscribe()
         attachments remove attachment
     }
 
     fun updateDescription() {
-        taskRetrofit.updateDescription(task.id, task.description).subscribe()
+        taskRetrofit.updateDescription(task.value!!.id, task.value!!.description).subscribe()
     }
 
     fun showHistory() {
         val filterActions = "addAttachmentToCard,createCard,addMemberToCard,updateCard:desc"
-        val disposable = historyRetrofit.findAllByTaskId(task.id, filterActions)
+        val disposable = historyRetrofit.findAllByTaskId(task.value!!.id, filterActions)
             .doOnSubscribe { isLoading.value = true }
             .doOnSuccess { isLoading.value = false }
             .subscribe { historyList ->
