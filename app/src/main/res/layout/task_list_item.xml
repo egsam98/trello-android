@@ -7,6 +7,7 @@
                                                          android:layout_width="match_parent" android:layout_height="wrap_content">
     <LinearLayout
             android:orientation="vertical"
+            android:background="@drawable/grey_border"
             android:layout_width="match_parent" android:layout_height="match_parent">
         <TextView
                 android:id="@+id/task_title"
@@ -16,7 +17,8 @@
                 android:paddingEnd="14dp"
                 android:textStyle="bold"
                 android:gravity="start|center"
-                android:layout_width="match_parent" android:layout_height="55dp" />
+                android:minHeight="55dp"
+                android:layout_width="match_parent" android:layout_height="wrap_content" />
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent" android:layout_height="wrap_content">

@@ -24,7 +24,6 @@ import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.TasksAdapter
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.Column
-import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.woxthebox.draglistview.BoardView
@@ -133,10 +132,17 @@ class TasksFragment: Fragment() {
         val headerView = LayoutInflater.from(context).inflate(R.layout.task_list_header, null).apply {
             findViewById<TextView>(R.id.task_header_title).text = column.title
             findViewById<ImageButton>(R.id.add_task).setOnClickListener {
-                tasksViewModel.add(column, Task())
+                showAddTaskDialog(column)
             }
         }
 
         boardView.addColumn(tasksAdapter, headerView, null, false)
+    }
+
+    private fun showAddTaskDialog(column: Column) {
+        val fragment = AddTaskDialogFragment().apply {
+            arguments = Bundle().apply { putSerializable("column", column) }
+        }
+        fragment.show(childFragmentManager, null)
     }
 }

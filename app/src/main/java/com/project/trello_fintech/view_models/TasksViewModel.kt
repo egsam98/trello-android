@@ -64,6 +64,11 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
     }
 
     fun add(column: Column, task: Task) {
+        if (task.text.isBlank()) {
+            val error = Pair("Текст новой задачи не должно быть пустым", null)
+            onError.emit(error)
+            return
+        }
         val disposable = taskRetrofit.create(task, column.id).subscribe{ newTask ->
             tasks.getValue(column).add(newTask)
         }
