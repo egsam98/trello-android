@@ -72,9 +72,11 @@ data class Task(
             get() {
                 val creatorText = "<b>${creator.fullname}</b>"
                 val html = when {
-                    data.attachment != null -> "$creatorText добавил вложение <b>${data.attachment.name}</b>"
-                    data.member != null -> "$creatorText добавил нового участника <b>${data.member.fullname}</b>"
-                    data.task != null -> "$creatorText обновил описание задачи: <b>${data.task.description}</b>"
+                    type == "createCard" -> "$creatorText создал задачу"
+                    type == "updateCard" && data.task?.description != null ->
+                        "$creatorText обновил описание задачи: <b>${data.task.description}</b>"
+                    type == "addMemberToCard" -> "$creatorText добавил нового участника <b>${data.member?.fullname}</b>"
+                    type == "addAttachmentToCard" -> "$creatorText добавил вложение <b>${data.attachment?.name}</b>"
                     else -> throw IllegalArgumentException("Неизвестный тип истории изменения")
                 }
                 return Html.fromHtml(html)
