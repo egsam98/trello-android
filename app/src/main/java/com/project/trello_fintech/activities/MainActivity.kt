@@ -21,6 +21,7 @@ import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.project.trello_fintech.utils.StringsRepository
 import com.project.trello_fintech.view_models.TaskDetailViewModel
+import com.project.trello_fintech.view_models.UsersViewModel
 import javax.inject.Inject
 
 
@@ -38,13 +39,14 @@ class MainActivity : AppCompatActivity() {
     private val boardsViewModel by lazy {
         cleanableViewModelProvider.get<BoardsViewModel>(this)
     }
-
     private val tasksViewModel by lazy {
         cleanableViewModelProvider.get<TasksViewModel>(this)
     }
-
     private val taskDetailViewModel by lazy {
         cleanableViewModelProvider.get<TaskDetailViewModel>(this)
+    }
+    private val userViewModel by lazy {
+        cleanableViewModelProvider.get<UsersViewModel>(this)
     }
 
     private lateinit var drawerLayout: DrawerLayout
@@ -82,7 +84,12 @@ class MainActivity : AppCompatActivity() {
         })
 
 
-        for (onError in arrayOf(boardsViewModel.onError, tasksViewModel.onError, taskDetailViewModel.onError)) {
+        for (onError in arrayOf(
+            boardsViewModel.onError,
+            tasksViewModel.onError,
+            taskDetailViewModel.onError,
+            userViewModel.onError
+        )) {
             onError.observe(this@MainActivity, Observer {(msg, code) ->
                 if ((msg.contains("token") || code == 401) && (savedInstanceState == null))
                     openWebViewForToken()

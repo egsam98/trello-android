@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.LinearLayout
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -15,6 +16,7 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -23,6 +25,7 @@ import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.AttachmentsAdapter
+import com.project.trello_fintech.adapters.ParticipantsAdapter
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.project.trello_fintech.views.DropDownListView
@@ -128,6 +131,16 @@ class TaskDetailFragment: Fragment() {
                 taskDetailViewModel.showHistory()
             }
         }
+
+        val participantsAdapter = ParticipantsAdapter(this)
+        view.findViewById<RecyclerView>(R.id.participants).apply {
+            layoutManager = LinearLayoutManager(cxt, RecyclerView.HORIZONTAL, false)
+            adapter = participantsAdapter
+        }
+
+        taskDetailViewModel.participants.observe(viewLifecycleOwner, Observer {
+            participantsAdapter.data = it
+        })
     }
 
     override fun onPause() {
@@ -156,5 +169,16 @@ class TaskDetailFragment: Fragment() {
                 }
             }
         }
+    }
+
+    fun selectParticipants() {
+        val task = taskDetailViewModel.task.value!!
+        val fragment = ParticipantsDialogFragment().apply {
+            arguments = Bundle().apply {
+                putString("taskId", task.id)
+                putString("boardId", task.boardId)
+            }
+        }
+        fragment.show(childFragmentManager, null)
     }
 }

@@ -26,7 +26,7 @@ class UsersFragment: ListFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        usersViewModel.createMocks(context)
+//        usersViewModel.createMocks(context)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -35,8 +35,8 @@ class UsersFragment: ListFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        usersViewModel.users.observe(this, Observer {
-            listAdapter = UsersAdapter(view.context, R.layout.user_list_item, it)
-        })
+//        usersViewModel.users.observe(this, Observer {
+//            listAdapter = UsersAdapter(view.context, R.layout.user_list_item, it)
+//        })
     }
 }

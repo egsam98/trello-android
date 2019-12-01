@@ -1,7 +1,17 @@
 package com.project.trello_fintech.models
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.widget.ImageView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.gson.annotations.SerializedName
+import com.project.trello_fintech.utils.randomColor
+import java.io.Serializable
+import com.project.trello_fintech.R
+
 
 /**
  * Пользователь приложения
@@ -12,11 +22,36 @@ import com.google.gson.annotations.SerializedName
  */
 data class User(
         @SerializedName("fullName", alternate = ["name"]) val fullname: String,
-        val avatar: Bitmap? = null
-    ) {
-    @SerializedName("avatarUrl")
-    val avatarUrl: String = ""
+        @SerializedName("id") val id: String = "",
+        @SerializedName("initials") val initials: String = ""
+    ): Serializable {
 
-    @SerializedName("initials")
-    val initials: String = ""
+    @SerializedName("avatarUrl")
+    val avatarUrl: String? = null
+
+    fun injectImage(imageView: ImageView, onLoadFailed: () -> Unit) {
+        onLoadFailed()
+        return
+        if (avatarUrl == null) {
+            onLoadFailed()
+            return
+        }
+        Glide.with(imageView)
+            .asBitmap()
+            .load(avatarUrl)
+            .into(object: CustomTarget<Bitmap>() {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    imageView.setImageBitmap(resource)
+                }
+
+                override fun onLoadFailed(errorDrawable: Drawable?) {
+                    onLoadFailed()
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
+    }
+
+//    @SerializedName("avatarUrl")
+//    val avatarUrl: String = ""
 }

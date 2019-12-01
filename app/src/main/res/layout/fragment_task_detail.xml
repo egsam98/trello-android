@@ -49,6 +49,15 @@
                         android:paddingEnd="10dp"
                         android:minHeight="50dp" />
                 <com.project.trello_fintech.views.TaskDetailSectionView
+                        app:iconSrc="@drawable/participants_icon"
+                        app:text="@string/participants"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"/>
+                <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/participants"
+                        android:padding="10dp"
+                        android:clickable="true"
+                        android:layout_width="match_parent" android:layout_height="wrap_content" />
+                <com.project.trello_fintech.views.TaskDetailSectionView
                         app:iconSrc="@drawable/attachment_icon"
                         app:text="@string/attachments"
                         android:layout_width="match_parent"

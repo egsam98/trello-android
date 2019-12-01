@@ -26,6 +26,9 @@ data class Task(
     @SerializedName("desc")
     var description: String = ""
 
+    @SerializedName("idBoard")
+    val boardId: String = ""
+
     var attachments: List<Attachment> = listOf()
 
     enum class AttachmentType {

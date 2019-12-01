@@ -22,7 +22,7 @@ class ViewModelFactory(private val cxt: Context, private val retrofitClient: Ret
         return when {
             modelClass.isAssignableFrom(BoardsViewModel::class.java) -> BoardsViewModel(retrofitClient)
             modelClass.isAssignableFrom(TasksViewModel::class.java) -> TasksViewModel(retrofitClient)
-            modelClass.isAssignableFrom(UsersViewModel::class.java) -> UsersViewModel()
+            modelClass.isAssignableFrom(UsersViewModel::class.java) -> UsersViewModel(retrofitClient)
             modelClass.isAssignableFrom(TaskDetailViewModel::class.java) -> TaskDetailViewModel(cxt, retrofitClient)
             else -> throw IllegalArgumentException("Unregistered ViewModel $modelClass in ViewModelFactory")
         } as T

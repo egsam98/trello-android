@@ -28,4 +28,5 @@ interface MainActivityComponent {
     fun inject(fragment: TaskDetailFragment)
     fun inject(fragment: TaskHistoryFragment)
     fun inject(fragment: AddTaskDialogFragment)
+    fun inject(fragment: ParticipantsDialogFragment)
 }

@@ -16,7 +16,7 @@ import com.project.trello_fintech.models.User
  * @property size Int размер изображения отрисовки
  * @property user User? пользователь
  */
-class AvatarView(cxt: Context, attrsSet: AttributeSet): AppCompatImageView(cxt, attrsSet) {
+class AvatarView(cxt: Context, attrsSet: AttributeSet?): AppCompatImageView(cxt, attrsSet) {
 
     companion object {
         const val DEFAULT_BACKGROUND_COLOR = "#edc9af"
@@ -51,16 +51,16 @@ class AvatarView(cxt: Context, attrsSet: AttributeSet): AppCompatImageView(cxt, 
         }
 
         user?.run {
-            if (avatar == null) {
+//            if (avatarUrl == null) {
                 drawDefaultImage(initials, canvas) // Передается первая буква имени
                 return
-            }
-            if (userAvatar != avatar || avatarSize != size) {
-                userAvatar = avatar
-                avatarSize = size
-                roundedBitmap = getRoundedBitmap(avatar, size)
-            }
-            canvas.drawBitmap(roundedBitmap, startX, startY, null)
+//            }
+//            if (userAvatar != avatarUrl || avatarSize != size) {
+//                userAvatar = avatarUrl
+//                avatarSize = size
+//                roundedBitmap = getRoundedBitmap(avatar, size)
+//            }
+//            canvas.drawBitmap(roundedBitmap, startX, startY, null)
         }
     }
 
@@ -69,14 +69,15 @@ class AvatarView(cxt: Context, attrsSet: AttributeSet): AppCompatImageView(cxt, 
      * @param initials String
      * @param canvas Canvas
      */
-    private fun drawDefaultImage(initials: String, canvas: Canvas) {
+    private fun drawDefaultImage(initials: String?, canvas: Canvas) {
         val radius = size / 2f
         with(paint) {
             color = Color.parseColor(DEFAULT_BACKGROUND_COLOR)
             canvas.drawCircle(startX + radius, startY + radius, radius, this)
 
             color = Color.WHITE
-            canvas.drawText(initials, startX + radius - TEXT_SIZE / 3 * 1.75f, startY + radius + TEXT_SIZE / 3, this)
+            canvas.drawText(initials?: user!!.fullname.substring(0..1).toUpperCase(),
+                startX + radius - TEXT_SIZE / 3 * 1.75f, startY + radius + TEXT_SIZE / 3, this)
         }
     }
 

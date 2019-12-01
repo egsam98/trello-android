@@ -8,8 +8,6 @@ import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.reactive.LiveEvent
 import okhttp3.RequestBody
 import android.net.Uri
-import com.project.trello_fintech.api.RetrofitClient
-import com.project.trello_fintech.api.TaskAttachmentApi
 import com.project.trello_fintech.utils.reactive.LiveList
 import okhttp3.MediaType
 import okhttp3.MultipartBody
@@ -23,8 +21,8 @@ import java.io.IOException
 import java.io.InputStream
 import java.lang.IllegalArgumentException
 import com.project.trello_fintech.R
-import com.project.trello_fintech.api.TaskApi
-import com.project.trello_fintech.api.TaskHistoryApi
+import com.project.trello_fintech.api.*
+import com.project.trello_fintech.models.User
 
 
 /**
@@ -57,6 +55,9 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     private val historyRetrofit by lazy {
         retrofitClient.create<TaskHistoryApi>(onError)
     }
+    private val userRetrofit by lazy {
+        retrofitClient.create<UserApi>(onError)
+    }
 
     val onError = LiveEvent<Pair<String, Int?>>()
     val onAttachmentClick = LiveEvent<Task.Attachment>()
@@ -66,6 +67,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     val actions = arrayOf(LiveEvent<Unit>(), null, null)
     val historyList = MutableLiveData<List<Task.History>>()
     val isLoading = MutableLiveData<Boolean>(false)
+    val participants = MutableLiveData<List<User>>()
 
     fun attachTask(id: String) {
         val disposable = taskRetrofit.findById(id)
@@ -74,6 +76,9 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
             .subscribe { task ->
                 attachmentRetrofit.findAllByTaskId(id).subscribe { attachments ->
                     this.attachments.data = attachments.toMutableList()
+                }
+                userRetrofit.findAllByTaskId(task.id).subscribe { participants ->
+                    this.participants.value = participants
                 }
                 this.task.value = task
             }
