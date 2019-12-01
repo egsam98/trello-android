@@ -59,12 +59,12 @@ class TaskDetailFragment: Fragment() {
     @Inject
     lateinit var cleanableViewModelProvider: CleanableViewModelProvider
 
-    lateinit var attachmentsAdapter: AttachmentsAdapter
+    private lateinit var attachmentsAdapter: AttachmentsAdapter
 
     private lateinit var binding: ViewDataBinding
 
     private val taskDetailViewModel by lazy {
-        cleanableViewModelProvider.get<TaskDetailViewModel>(this)
+        cleanableViewModelProvider.get<TaskDetailViewModel>(viewLifecycleOwner)
     }
 
     private var requestPermissionsUri: Uri? = null

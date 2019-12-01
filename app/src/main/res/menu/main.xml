@@ -4,5 +4,6 @@
             android:id="@+id/drawer"
             android:title="nav"
             app:showAsAction="always"
+            android:orderInCategory="1"
             android:icon="@android:drawable/ic_menu_more"/>
 </menu>

@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity() {
         }
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.fragment_container, fragment, "taskDetail")
+            .replace(R.id.fragment_container, fragment, "taskDetail")
             .addToBackStack(null)
             .commit()
     }

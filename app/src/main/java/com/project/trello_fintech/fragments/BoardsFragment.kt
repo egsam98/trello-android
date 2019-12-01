@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
@@ -30,14 +29,16 @@ import javax.inject.Inject
 class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     @Inject
+    lateinit var activity: MainActivity
+
+    @Inject
     lateinit var cleanableViewModelProvider: CleanableViewModelProvider
 
-    private val boardsViewModel by lazy {
-        cleanableViewModelProvider.get<BoardsViewModel>(viewLifecycleOwner)
-    }
+    private lateinit var boardsViewModel: BoardsViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         MainActivity.component.inject(this)
+        boardsViewModel = cleanableViewModelProvider.get(viewLifecycleOwner)
         val binding = DataBindingUtil.inflate<ViewDataBinding>(inflater, R.layout.fragment_boards, container, false)
         binding.setVariable(BR.viewModel, boardsViewModel)
         binding.lifecycleOwner = this
@@ -72,7 +73,7 @@ class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             AddBoardDialogFragment().show(childFragmentManager, null)
         }
 
-        (activity as AppCompatActivity).supportActionBar?.title = "Доски"
+        activity.supportActionBar?.title = "Доски"
     }
 
     override fun onRefresh() {
