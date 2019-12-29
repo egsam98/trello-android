@@ -16,31 +16,29 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.project.trello_fintech.BR
-import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.TasksAdapter
-import com.project.trello_fintech.listeners.OnTaskSearchListener
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.Column
+import com.project.trello_fintech.utils.ResettableFilterable
 import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.woxthebox.draglistview.BoardView
 import com.woxthebox.draglistview.DragItem
 import javax.inject.Inject
+import com.project.trello_fintech.R
+import com.project.trello_fintech.listeners.OnTaskSearchListener
+import com.project.trello_fintech.views.ClearableSearchView
 
 
 /**
  * Фрагмент списка задач (в виде BoardView)
- * @property cxt Context
  * @property activity MainActivity
  * @property cleanableViewModelProvider CleanableViewModelProvider
  * @property tasksViewModel TasksViewModel
  * @property boardView BoardView?
  */
 class TasksFragment: Fragment() {
-
-    @Inject
-    lateinit var cxt: Context
 
     @Inject
     lateinit var activity: MainActivity
@@ -128,16 +126,20 @@ class TasksFragment: Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         val title = resources.getString(R.string.task_search)
+
+        val filters = (0 until boardView!!.columnCount).map { columnInd ->
+            val adapter = boardView!!.getAdapter(columnInd) as ResettableFilterable
+            adapter.filter
+        }
+
         with(menu.add(Menu.NONE, Menu.NONE, 0, title)){
             setIcon(android.R.drawable.ic_menu_search)
             setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-            actionView = SearchView(cxt).apply {
+
+            actionView = ClearableSearchView(context).apply {
                 queryHint = title
-                setOnQueryTextListener(OnTaskSearchListener(boardView!!))
-                setOnQueryTextFocusChangeListener { _, isFocused ->
-                    if (!isFocused)
-                        isIconified = true
-                }
+                onClear = { filters.forEach { it.reset() } }
+                setOnQueryTextListener(OnTaskSearchListener(context, filters))
             }
         }
     }
@@ -146,7 +148,7 @@ class TasksFragment: Fragment() {
         val tasksAdapter = TasksAdapter(column, tasksViewModel, maxAttachmentsPreviewNum = 2)
         tasksViewModel.load(column)
         tasksViewModel.observe(column) {
-            tasksAdapter.itemList = it
+            tasksAdapter.data = it
         }
 
         val headerView = LayoutInflater.from(context).inflate(R.layout.task_list_header, null).apply {

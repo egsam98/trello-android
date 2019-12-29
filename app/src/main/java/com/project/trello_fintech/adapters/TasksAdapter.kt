@@ -1,16 +1,16 @@
 package com.project.trello_fintech.adapters
 
 import android.view.*
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.woxthebox.draglistview.DragItemAdapter
 import com.project.trello_fintech.R
 import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
+import com.project.trello_fintech.utils.ResettableFilter
+import com.project.trello_fintech.utils.ResettableFilterable
 import com.project.trello_fintech.view_models.TasksViewModel
-import io.reactivex.subjects.*
 
 
 /**
@@ -18,17 +18,17 @@ import io.reactivex.subjects.*
  * @property column Column
  * @property tasksViewModel TasksViewModel
  * @property maxAttachmentsPreviewNum Int
- * @property searchText String
- * @property foundCount Int максимальное кол-во отображаемых превью-изображений
- * @property onSearchFinish PublishSubject<(kotlin.Int..kotlin.Int?)>
+ * @property data List<Task>
  */
 class TasksAdapter(val column: Column, private val tasksViewModel: TasksViewModel, private val maxAttachmentsPreviewNum: Int):
-    DragItemAdapter<Task, TasksAdapter.TaskViewHolder>(), ISearchableAdapter<TasksAdapter.TaskViewHolder> {
+    DragItemAdapter<Task, TasksAdapter.TaskViewHolder>(), ResettableFilterable {
 
-    private var searchText: String = ""
-    private var foundCount = 0
+   var data = listOf<Task>()
+    set(value) {
+        field = value
+        itemList = value
+    }
 
-    override val onSearchFinish = PublishSubject.create<Int>()
 
     class TaskViewHolder(val view: View) : DragItemAdapter.ViewHolder(view, R.id.task, true) {
         val layout: LinearLayout = view.findViewById(R.id.wrapper)
@@ -61,34 +61,26 @@ class TasksAdapter(val column: Column, private val tasksViewModel: TasksViewMode
                     plusNAttachmentsAlsoView.text = text
                 }
             }
-
-            if (searchText.isNotEmpty()) {
-                if (textView.text.toString().toLowerCase() == searchText.toLowerCase())
-                    onMatch(holder)
-                else
-                    onMismatch(holder)
-                if (position == itemCount - 1) {
-                    onSearchFinish.onNext(foundCount)
-                    searchText = ""
-                    foundCount = 0
-                }
-            }
         }
     }
 
     override fun getUniqueItemId(position: Int) = itemList[position].id.hashCode().toLong()
 
-    override fun search(text: String) {
-        searchText = text
-        notifyDataSetChanged()
-    }
+    override fun getFilter(): ResettableFilter = object: ResettableFilter() {
+        override fun performFiltering(searchText: CharSequence): FilterResults? {
+            val found = data.filter { it.text.toLowerCase() == searchText.toString().toLowerCase() }
+            return FilterResults().apply {
+                values = found
+                count = found.size
+            }
+        }
 
-    override fun onMatch(holder: TaskViewHolder) {
-        holder.layout.setBackgroundResource(R.drawable.red_border)
-        foundCount++
-    }
+        override fun publishResults(searchText: CharSequence, filterResults: FilterResults) {
+            itemList = filterResults.values as List<Task>
+        }
 
-    override fun onMismatch(holder: TaskViewHolder) {
-        holder.layout.setBackgroundResource(R.drawable.grey_border)
+        override fun reset() {
+            itemList = data
+        }
     }
 }
