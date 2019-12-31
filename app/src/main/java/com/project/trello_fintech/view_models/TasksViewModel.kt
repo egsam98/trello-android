@@ -1,15 +1,16 @@
 package com.project.trello_fintech.view_models
 
 import androidx.lifecycle.*
-import com.project.trello_fintech.api.RetrofitClient
-import com.project.trello_fintech.api.TaskApi
-import com.project.trello_fintech.api.TaskAttachmentApi
+import com.project.trello_fintech.api.*
 import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.reactive.LiveEvent
 import com.project.trello_fintech.utils.reactive.LiveList
 import io.reactivex.Observable
+import io.reactivex.Single
+import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
+import java.util.*
 
 
 /**
@@ -31,6 +32,8 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
 
     private val taskRetrofit by lazy { retrofitClient.create<TaskApi>(onError) }
     private val taskAttachmentRetrofit by lazy { retrofitClient.create<TaskAttachmentApi>(onError) }
+    private val historyRetrofit by lazy { retrofitClient.create<TaskHistoryApi>(onError) }
+
     private val tasks = linkedMapOf<Column, LiveList<Task>>()
     var isLoading = MutableLiveData<Boolean>()
         private set
@@ -43,11 +46,17 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
         val disposable = taskRetrofit.findAllByColumnId(column.id)
             .doOnSubscribe { isLoading.value = true }
             .doAfterSuccess { isLoading.value = false }
-            .flattenAsObservable{ it }
-            .concatMap { task ->
-                taskAttachmentRetrofit.findAllByTaskId(task.id)
-                    .map { task.apply { attachments = it }}
-                    .toObservable()
+            .flattenAsObservable { it }
+            .concatMapSingle { task ->
+                val s1 = taskAttachmentRetrofit.findAllByTaskId(task.id)
+                val s2 = historyRetrofit.findCreationHistoryByTaskId(task.id)
+
+                Single.zip<List<Task.Attachment>, Date, Task>(s1, s2, BiFunction { attachments, creationDate ->
+                    task.apply {
+                        this.attachments = attachments
+                        this.creationDate = creationDate
+                    }
+                })
             }
             .toList()
             .subscribe { taskList ->

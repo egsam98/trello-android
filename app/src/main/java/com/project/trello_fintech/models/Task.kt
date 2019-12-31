@@ -12,7 +12,11 @@ import kotlin.random.Random
  * Задача - элементарная структура (класс) проекта
  * @property text String
  * @property id String
- * @property trelloPos String позиция в списке trello, представляет число с плавающей точкой либо "bottom", "top"
+ * @property trelloPos String
+ * @property description String
+ * @property boardId String
+ * @property creationDate Date
+ * @property dueDate Date?
  * @property attachments List<Attachment>
  */
 data class Task(
@@ -28,6 +32,11 @@ data class Task(
 
     @SerializedName("idBoard")
     val boardId: String = ""
+
+    var creationDate: Date = Date()
+
+    @SerializedName("due")
+    val dueDate: Date? = null
 
     var attachments: List<Attachment> = listOf()
 
@@ -87,6 +96,7 @@ data class Task(
     }
 }
 
+// TODO: move to utils
 private fun randomString(): String {
     val charPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     return (1..5)

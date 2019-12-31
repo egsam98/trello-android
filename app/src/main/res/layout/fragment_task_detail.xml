@@ -35,6 +35,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <com.project.trello_fintech.views.TaskDetailSectionView
+                        app:iconSrc="@android:drawable/ic_menu_recent_history"
+                        app:text="Сроки выполнения"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                <LinearLayout
+                        android:orientation="vertical"
+                        android:padding="10dp"
+                        android:textSize="35sp"
+                        android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView
+                            android:id="@+id/task_date_start"
+                            android:text="@{viewModel.task.creationDate}"
+                            android:layout_width="match_parent" android:layout_height="wrap_content" />
+                    <TextView
+                            android:id="@+id/task_date_deadline"
+                            android:text="@{viewModel.task.dueDate}"
+                            android:layout_width="match_parent" android:layout_height="wrap_content" />
+                </LinearLayout>
+                <com.project.trello_fintech.views.TaskDetailSectionView
                         app:iconSrc="@drawable/description_icon"
                         app:text="Описание"
                         android:layout_width="match_parent"

@@ -10,6 +10,7 @@ import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.ResettableFilter
 import com.project.trello_fintech.utils.ResettableFilterable
+import com.project.trello_fintech.utils.toShortFormat
 import com.project.trello_fintech.view_models.TasksViewModel
 
 
@@ -32,7 +33,8 @@ class TasksAdapter(val column: Column, private val tasksViewModel: TasksViewMode
 
     class TaskViewHolder(val view: View) : DragItemAdapter.ViewHolder(view, R.id.task, true) {
         val layout: LinearLayout = view.findViewById(R.id.wrapper)
-        val textView: TextView = view.findViewById(R.id.task_title)
+        val titleView: TextView = view.findViewById(R.id.task_title)
+        val datesView: TextView = view.findViewById(R.id.task_dates)
         val attachmentsPreView: RecyclerView = view.findViewById<RecyclerView>(R.id.attachments_preview).apply {
             layoutManager = LinearLayoutManager(view.context, RecyclerView.HORIZONTAL, false)
         }
@@ -48,7 +50,10 @@ class TasksAdapter(val column: Column, private val tasksViewModel: TasksViewMode
         super.onBindViewHolder(holder, position)
         with(holder) {
             val item = itemList[position]
-            textView.text = item.text
+            titleView.text = item.text
+
+            val dates = arrayOf(item.creationDate, item.dueDate).joinToString(" - ") { it.toShortFormat() }
+            datesView.text = dates
 
             view.setOnClickListener {
                 tasksViewModel.onClick.emit(item.id)

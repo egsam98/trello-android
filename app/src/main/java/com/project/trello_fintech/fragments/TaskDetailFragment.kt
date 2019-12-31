@@ -6,15 +6,11 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.LinearLayout
-import androidx.appcompat.widget.Toolbar
+import android.widget.*
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,9 +22,12 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.AttachmentsAdapter
 import com.project.trello_fintech.adapters.ParticipantsAdapter
+import com.project.trello_fintech.utils.toDefaultFormat
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.project.trello_fintech.views.DropDownListView
+import java.lang.IllegalStateException
+import java.util.*
 import javax.inject.Inject
 
 
@@ -36,10 +35,13 @@ private const val READ_EXTERNAL_STORAGE_PERM = android.Manifest.permission.READ_
 private const val UPLOAD_ATTACHMENT_REQUEST = 1
 private const val READ_EXTERNAL_STORAGE_REQUEST = 2
 
-
-@BindingAdapter("subtitle")
-fun Toolbar.setSubtitle(loadingInfo: LiveData<MutableList<String>>) {
-    subtitle = loadingInfo.value?.joinToString(", ")
+@BindingAdapter("android:text")
+fun TextView.setDate(date: Date?) {
+    text = when (id) {
+        R.id.task_date_start -> "Начало: ${date.toDefaultFormat()}"
+        R.id.task_date_deadline -> "Дедлайн: ${date.toDefaultFormat()}"
+        else -> throw IllegalStateException("Неизвестный TextView ID")
+    }
 }
 
 /**
