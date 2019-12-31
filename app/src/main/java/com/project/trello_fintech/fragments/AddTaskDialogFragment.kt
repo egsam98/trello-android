@@ -58,11 +58,11 @@ class AddTaskDialogFragment: DialogFragment() {
         return AlertDialog.Builder(requireContext())
             .setCustomTitle(createCustomTitleView(column.title))
             .setView(dialogText)
-            .setPositiveButton("Создать") { _, _ ->
+            .setPositiveButton(R.string.create) { _, _ ->
                 viewModel.add(column, Task(dialogText.text.toString()))
                 dismiss()
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .create()
     }
 

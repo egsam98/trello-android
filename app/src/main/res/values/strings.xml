@@ -13,4 +13,6 @@
     <string name="changes_history">История изменений</string>
     <string name="task_search">Поиск задачи</string>
     <string name="delete">Удалить</string>
+    <string name="create">Создать</string>
+    <string name="cancel">Отмена</string>
 </resources>

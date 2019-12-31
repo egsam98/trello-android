@@ -60,12 +60,12 @@ class AddBoardDialogFragment: DialogFragment() {
         return AlertDialog.Builder(context!!)
             .setTitle(R.string.add_board_title)
             .setView(dialogView)
-            .setPositiveButton("Создать") { _,_ ->
+            .setPositiveButton(R.string.create) { _,_ ->
                 val newBoard = Board(textInput.text.toString(), categoriesSpinner.selectedItem as Board.Category)
                 viewModel.add(newBoard)
                 dismiss()
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .create()
     }
 
