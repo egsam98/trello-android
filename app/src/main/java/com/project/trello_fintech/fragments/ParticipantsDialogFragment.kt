@@ -8,10 +8,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
-import com.project.trello_fintech.adapters.ParticipantsAdapter
 import com.project.trello_fintech.adapters.SelectParticipantsAdapter
-import com.project.trello_fintech.adapters.UsersAdapter
-import com.project.trello_fintech.models.User
+import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.UsersViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
@@ -19,6 +17,18 @@ import javax.inject.Inject
 
 
 class ParticipantsDialogFragment: DialogFragment() {
+
+    companion object {
+        private const val TASK_ID_ARG = "taskId"
+        private const val BOARD_ID_ARG = "boardId"
+        fun create(task: Task): ParticipantsDialogFragment {
+            val bundle = Bundle().apply {
+                putString(TASK_ID_ARG, task.id)
+                putString(BOARD_ID_ARG, task.boardId)
+            }
+            return ParticipantsDialogFragment().apply { arguments = bundle }
+        }
+    }
 
     @Inject
     lateinit var cleanableViewModelProvider: CleanableViewModelProvider
@@ -56,13 +66,12 @@ class ParticipantsDialogFragment: DialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        arguments?.let {
-            val boardId = it.getString("boardId")
-            val taskId = it.getString("taskId")
-            usersViewModel.observeBoardAndTaskUsers(boardId!!, taskId!!) { pair ->
+        val boardId = requireArguments().getString(BOARD_ID_ARG)
+        val taskId = requireArguments().getString(TASK_ID_ARG)
+        if (boardId != null && taskId != null)
+            usersViewModel.observeBoardAndTaskUsers(boardId, taskId) { pair ->
                 selectParticipantsAdapter.attachBoardAndTaskUsers(pair)
             }
-        }
     }
 
 }

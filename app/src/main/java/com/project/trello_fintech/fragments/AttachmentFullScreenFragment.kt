@@ -26,6 +26,14 @@ import com.project.trello_fintech.views.CircularProgressBar
  */
 class AttachmentFullScreenFragment: Fragment() {
 
+    companion object {
+        private const val ATTACHMENT_ARG = "attachment"
+        fun create(attachment: Task.Attachment): AttachmentFullScreenFragment {
+            val bundle = Bundle().apply { putSerializable(ATTACHMENT_ARG, attachment) }
+            return AttachmentFullScreenFragment().apply { arguments = bundle }
+        }
+    }
+
     private lateinit var binding: FragmentAttachmentFullScreenBinding
     private lateinit var progressBar: CircularProgressBar
 
@@ -35,7 +43,7 @@ class AttachmentFullScreenFragment: Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val attachment = arguments?.getSerializable("attachment") as Task.Attachment
+        val attachment = requireArguments().getSerializable(ATTACHMENT_ARG) as Task.Attachment
         binding.attachment = attachment
         progressBar = view.findViewById<CircularProgressBar>(R.id.progressBar).apply {
             loading()

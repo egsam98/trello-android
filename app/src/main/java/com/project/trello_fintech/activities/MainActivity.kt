@@ -126,22 +126,15 @@ class MainActivity : AppCompatActivity() {
     private fun showTasks(board: Board) {
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.fragment_container, TasksFragment().apply {
-                arguments = Bundle().apply { putSerializable("board", board) }
-            })
+            .add(R.id.fragment_container, TasksFragment.create(board))
             .addToBackStack(null)
             .commit()
     }
 
     private fun showTaskDetail(taskId: String) {
-        val fragment = TaskDetailFragment().apply {
-            arguments = Bundle().apply {
-                putSerializable("taskId", taskId)
-            }
-        }
         supportFragmentManager
             .beginTransaction()
-            .replace(R.id.fragment_container, fragment, "taskDetail")
+            .replace(R.id.fragment_container, TaskDetailFragment.create(taskId), "taskDetail")
             .addToBackStack(null)
             .commit()
     }
@@ -149,11 +142,7 @@ class MainActivity : AppCompatActivity() {
     private fun showAttachmentFullScreen(attachment: Task.Attachment) {
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.fragment_container, AttachmentFullScreenFragment().apply {
-                arguments = Bundle().apply {
-                    putSerializable("attachment", attachment)
-                }
-            })
+            .add(R.id.fragment_container, AttachmentFullScreenFragment.create(attachment))
             .addToBackStack(null)
             .commit()
     }

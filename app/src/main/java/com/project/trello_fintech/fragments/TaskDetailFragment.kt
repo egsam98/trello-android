@@ -55,6 +55,14 @@ fun TextView.setDate(date: Date?) {
  */
 class TaskDetailFragment: Fragment() {
 
+    companion object {
+        private const val TASK_ID_ARG = "taskId"
+        fun create(taskId: String): TaskDetailFragment {
+            val bundle = Bundle().apply { putString(TASK_ID_ARG, taskId) }
+            return TaskDetailFragment().apply { arguments = bundle }
+        }
+    }
+
     @Inject
     lateinit var cxt: Context
 
@@ -82,7 +90,7 @@ class TaskDetailFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         MainActivity.component.inject(this)
-        arguments?.getString("taskId")?.let { taskDetailViewModel.attachTask(it) }
+        requireArguments().getString(TASK_ID_ARG)?.let { taskDetailViewModel.attachTask(it) }
         binding.setVariable(BR.viewModel, taskDetailViewModel)
 
         attachmentsAdapter = AttachmentsAdapter(taskDetailViewModel)
@@ -175,12 +183,7 @@ class TaskDetailFragment: Fragment() {
 
     fun selectParticipants() {
         val task = taskDetailViewModel.task.value!!
-        val fragment = ParticipantsDialogFragment().apply {
-            arguments = Bundle().apply {
-                putString("taskId", task.id)
-                putString("boardId", task.boardId)
-            }
-        }
+        val fragment = ParticipantsDialogFragment.create(task)
         fragment.show(childFragmentManager, null)
     }
 }

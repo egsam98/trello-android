@@ -40,6 +40,14 @@ import com.project.trello_fintech.views.ClearableSearchView
  */
 class TasksFragment: Fragment() {
 
+    companion object {
+        private const val BOARD_ARG = "board"
+        fun create(board: Board): TasksFragment {
+            val bundle = Bundle().apply { putSerializable(BOARD_ARG, board) }
+            return TasksFragment().apply { arguments = bundle }
+        }
+    }
+
     @Inject
     lateinit var activity: MainActivity
 
@@ -93,7 +101,7 @@ class TasksFragment: Fragment() {
             })
         }
 
-        val selectedBoard = arguments?.getSerializable("board") as Board
+        val selectedBoard = requireArguments().getSerializable(BOARD_ARG) as Board
 
         val prefs = selectedBoard.prefs
         if (prefs != null) {
@@ -162,9 +170,7 @@ class TasksFragment: Fragment() {
     }
 
     private fun showAddTaskDialog(column: Column) {
-        val fragment = AddTaskDialogFragment().apply {
-            arguments = Bundle().apply { putSerializable("column", column) }
-        }
+        val fragment = AddTaskDialogFragment.create(column)
         fragment.show(childFragmentManager, null)
     }
 }

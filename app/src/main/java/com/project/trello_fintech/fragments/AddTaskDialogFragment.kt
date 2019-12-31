@@ -29,6 +29,14 @@ import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
  */
 class AddTaskDialogFragment: DialogFragment() {
 
+    companion object {
+        private const val COLUMN_ARG = "column"
+        fun create(column: Column): AddTaskDialogFragment {
+            val bundle = Bundle().apply { putSerializable(COLUMN_ARG, column) }
+            return AddTaskDialogFragment().apply { arguments = bundle }
+        }
+    }
+
     @Inject
     lateinit var cleanableViewModelProvider: CleanableViewModelProvider
 
@@ -46,7 +54,7 @@ class AddTaskDialogFragment: DialogFragment() {
             setText(savedInstanceState?.getCharSequence("text"))
             setTextColor(Color.BLACK)
         }
-        val column = arguments?.getSerializable("column") as Column
+        val column = requireArguments().getSerializable(COLUMN_ARG) as Column
         return AlertDialog.Builder(requireContext())
             .setCustomTitle(createCustomTitleView(column.title))
             .setView(dialogText)
