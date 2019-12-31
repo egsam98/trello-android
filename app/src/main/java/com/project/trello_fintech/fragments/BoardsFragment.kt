@@ -16,6 +16,7 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.BoardsAdapter
 import com.project.trello_fintech.listeners.BoardTouchHelperCallback
+import com.project.trello_fintech.utils.isInternetAvailable
 import com.project.trello_fintech.view_models.BoardsViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import javax.inject.Inject
@@ -70,7 +71,10 @@ class BoardsFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         }
 
         view.findViewById<FloatingActionButton>(R.id.add_board).setOnClickListener {
-            AddBoardDialogFragment().show(childFragmentManager, null)
+            if (isInternetAvailable())
+                AddBoardDialogFragment().show(childFragmentManager, null)
+            else
+                boardsViewModel.onError.emit(Pair("Нет подключения к интернету", null))
         }
 
         activity.supportActionBar?.title = "Доски"

@@ -1,6 +1,5 @@
 package com.project.trello_fintech.models
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
@@ -8,9 +7,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.google.gson.annotations.SerializedName
-import com.project.trello_fintech.utils.randomColor
 import java.io.Serializable
-import com.project.trello_fintech.R
 
 
 /**
