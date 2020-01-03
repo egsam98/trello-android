@@ -1,6 +1,7 @@
 package com.project.trello_fintech.view_models
 
 import androidx.lifecycle.*
+import androidx.lifecycle.Observer
 import com.project.trello_fintech.api.*
 import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
@@ -18,8 +19,11 @@ import java.util.*
  * @property retrofitClient RetrofitClient
  * @property taskRetrofit TaskApi
  * @property taskAttachmentRetrofit TaskAttachmentApi
+ * @property historyRetrofit TaskHistoryApi
  * @property tasks LinkedHashMap<Column, LiveList<Task>>
  * @property isLoading MutableLiveData<Boolean>
+ * @property counterDown MutableLiveData<Int?>
+ * @property onDataLoaded LiveEvent<Unit>
  * @property onError LiveEvent<Pair<String, Int?>>
  * @property onClick LiveEvent<String>
  */
@@ -34,10 +38,14 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
     private val taskAttachmentRetrofit by lazy { retrofitClient.create<TaskAttachmentApi>(onError) }
     private val historyRetrofit by lazy { retrofitClient.create<TaskHistoryApi>(onError) }
 
-    private val tasks = linkedMapOf<Column, LiveList<Task>>()
-    var isLoading = MutableLiveData<Boolean>()
-        private set
+    val tasks = linkedMapOf<Column, LiveList<Task>>()
+    val isLoading = MutableLiveData<Boolean>()
 
+    private val counterDown = MutableLiveData<Int?>(null).apply {
+        observeForever { if (it == 0) onDataLoaded.emit() }
+    }
+
+    private val onDataLoaded = LiveEvent<Unit>()
     val onError = LiveEvent<Pair<String, Int?>>()
     val onClick = LiveEvent<String>()
 
@@ -45,7 +53,10 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
         tasks[column] = LiveList()
         val disposable = taskRetrofit.findAllByColumnId(column.id)
             .doOnSubscribe { isLoading.value = true }
-            .doAfterSuccess { isLoading.value = false }
+            .doAfterSuccess {
+                isLoading.value = false
+                counterDown.value = counterDown.value?.dec()
+            }
             .flattenAsObservable { it }
             .concatMapSingle { task ->
                 val s1 = taskAttachmentRetrofit.findAllByTaskId(task.id)
@@ -63,6 +74,11 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
                 tasks.getValue(column).data = taskList
             }
         clearOnDestroy(disposable)
+    }
+
+    fun observeOnLoaded(columnsCount: Int, lifecycleOwner: LifecycleOwner, callback: () -> Unit) {
+        counterDown.value = columnsCount
+        onDataLoaded.observe(lifecycleOwner, Observer { callback() })
     }
 
     fun observe(column: Column, subscribe: (List<Task>) -> Unit) {

@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
+import com.google.android.material.navigation.NavigationView
 import com.project.trello_fintech.Application
 import com.project.trello_fintech.R
 import com.project.trello_fintech.di.components.MainActivityComponent
@@ -35,6 +36,8 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var stringsRepository: StringsRepository
+
+    val navigationView: NavigationView by lazy { findViewById<NavigationView>(R.id.nav_view) }
 
     private val boardsViewModel by lazy {
         cleanableViewModelProvider.get<BoardsViewModel>(this)

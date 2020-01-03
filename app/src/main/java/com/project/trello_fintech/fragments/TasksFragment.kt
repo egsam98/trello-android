@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.google.android.material.navigation.NavigationView
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.TasksAdapter
@@ -27,6 +28,7 @@ import com.woxthebox.draglistview.BoardView
 import com.woxthebox.draglistview.DragItem
 import javax.inject.Inject
 import com.project.trello_fintech.R
+import com.project.trello_fintech.activities.GanttChartActivity
 import com.project.trello_fintech.listeners.OnTaskSearchListener
 import com.project.trello_fintech.views.ClearableSearchView
 
@@ -38,7 +40,7 @@ import com.project.trello_fintech.views.ClearableSearchView
  * @property tasksViewModel TasksViewModel
  * @property boardView BoardView?
  */
-class TasksFragment: Fragment() {
+class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener {
 
     companion object {
         private const val BOARD_ARG = "board"
@@ -123,11 +125,16 @@ class TasksFragment: Fragment() {
             processTaskListItem(column)
         }
 
+        tasksViewModel.observeOnLoaded(selectedBoard.columns.size, viewLifecycleOwner) {
+            activity.navigationView.setupMenu()
+        }
+
         activity.supportActionBar?.title = selectedBoard.title
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        activity.navigationView.menu.clear()
         boardView = null
     }
 
@@ -152,6 +159,12 @@ class TasksFragment: Fragment() {
         }
     }
 
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.gantt_chart)
+            GanttChartActivity.start(requireActivity(), tasksViewModel.tasks)
+        return true
+    }
+
     private fun processTaskListItem(column: Column) {
         val tasksAdapter = TasksAdapter(column, tasksViewModel, maxAttachmentsPreviewNum = 2)
         tasksViewModel.load(column)
@@ -172,5 +185,11 @@ class TasksFragment: Fragment() {
     private fun showAddTaskDialog(column: Column) {
         val fragment = AddTaskDialogFragment.create(column)
         fragment.show(childFragmentManager, null)
+    }
+
+    private fun NavigationView.setupMenu() {
+        menu.clear()
+        inflateMenu(R.menu.tasks)
+        setNavigationItemSelectedListener(this@TasksFragment)
     }
 }

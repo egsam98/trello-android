@@ -14,7 +14,7 @@ fun Date?.toDefaultFormat(): String = when (this) {
 
 fun Date?.toShortFormat(): String = when (this) {
     null -> "Нет данных"
-    else -> DateFormat.format("dd.MM.yyyy hh:mm:ss", this).toString()
+    else -> DateFormat.format("yyyy-MM-dd hh:mm:ss", this).toString()
 }
 
 fun isInternetAvailable(): Boolean {
