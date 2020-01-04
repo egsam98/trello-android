@@ -56,7 +56,7 @@ class TasksAdapter(val column: Column, private val tasksViewModel: TasksViewMode
             datesView.text = dates
 
             view.setOnClickListener {
-                tasksViewModel.onClick.emit(item.id)
+                tasksViewModel.onClick.emit(item)
             }
             with(item.attachments) {
                 val imageAttachments = asSequence().filter { it.isImage() }.take(2).toList()

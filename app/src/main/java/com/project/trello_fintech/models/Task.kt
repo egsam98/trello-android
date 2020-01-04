@@ -44,6 +44,15 @@ data class Task(
         SMALL, MEDIUM, LARGE
     }
 
+    /**
+     * Вложение к задаче
+     * @property id String
+     * @property name String
+     * @property mimeType String?
+     * @property date Date
+     * @property imageUrls Array<ImageUrl>?
+     * @property url String
+     */
     data class Attachment(
         @SerializedName("id") val id: String,
         @SerializedName("name") val name: String,
@@ -67,6 +76,14 @@ data class Task(
         }
     }
 
+    /**
+     * История изменений задачи
+     * @property data Data
+     * @property type String
+     * @property date Date
+     * @property creator User
+     * @property message Spanned
+     */
     data class History(
         @SerializedName("data") val data: Data,
         @SerializedName("type") val type: String,
@@ -74,6 +91,21 @@ data class Task(
         @SerializedName("memberCreator") val creator: User
     ) {
 
+        companion object {
+            const val TYPES =
+                "addAttachmentToCard," +
+                "createCard," +
+                "addMemberToCard," +
+                "updateCard:desc," +
+                "convertToCardFromCheckItem"
+        }
+
+        /**
+         * Измененные данные задачи
+         * @property task Task?
+         * @property attachment Attachment?
+         * @property member User?
+         */
         data class Data(
             @SerializedName("card") val task: Task?,
             @SerializedName("attachment") val attachment: Attachment?,
@@ -84,11 +116,13 @@ data class Task(
             get() {
                 val creatorText = "<b>${creator.fullname}</b>"
                 val html = when {
-                    type == "createCard" -> "$creatorText создал задачу"
+                    type == "createCard" -> "$creatorText создал(-а) задачу"
+                    type == "convertToCardFromCheckItem" ->
+                        "$creatorText сконвертировал(-а) задачу из элемента чек-листа задачи <b>${data.task?.text}</b>"
                     type == "updateCard" && data.task?.description != null ->
-                        "$creatorText обновил описание задачи: <b>${data.task.description}</b>"
-                    type == "addMemberToCard" -> "$creatorText добавил нового участника <b>${data.member?.fullname}</b>"
-                    type == "addAttachmentToCard" -> "$creatorText добавил вложение <b>${data.attachment?.name}</b>"
+                        "$creatorText обновил(-а) описание задачи: <b>${data.task.description}</b>"
+                    type == "addMemberToCard" -> "$creatorText добавил(-а) нового участника <b>${data.member?.fullname}</b>"
+                    type == "addAttachmentToCard" -> "$creatorText добавил(-а) вложение <b>${data.attachment?.name}</b>"
                     else -> throw IllegalArgumentException("Неизвестный тип истории изменения")
                 }
                 return Html.fromHtml(html)

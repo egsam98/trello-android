@@ -134,10 +134,10 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    private fun showTaskDetail(taskId: String) {
+    private fun showTaskDetail(task: Task) {
         supportFragmentManager
             .beginTransaction()
-            .replace(R.id.fragment_container, TaskDetailFragment.create(taskId), "taskDetail")
+            .replace(R.id.fragment_container, TaskDetailFragment.create(task), "taskDetail")
             .addToBackStack(null)
             .commit()
     }

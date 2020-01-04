@@ -23,6 +23,8 @@ import java.lang.IllegalArgumentException
 import com.project.trello_fintech.R
 import com.project.trello_fintech.api.*
 import com.project.trello_fintech.models.User
+import io.reactivex.Observable
+import io.reactivex.functions.BiFunction
 
 
 /**
@@ -69,19 +71,16 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     val isLoading = MutableLiveData<Boolean>(false)
     val participants = MutableLiveData<List<User>>()
 
-    fun attachTask(id: String) {
-        val disposable = taskRetrofit.findById(id)
+    fun attachTask(task: Task) {
+        val s1 = attachmentRetrofit.findAllByTaskId(task.id).toObservable()
+        val s2 = userRetrofit.findAllByTaskId(task.id).toObservable()
+        val disposable = Observable.zip<List<Task.Attachment>, List<User>, Unit>(s1, s2, BiFunction { attachments, participants ->
+                this.attachments.data = attachments.toMutableList()
+                this.participants.value = participants
+            })
             .doOnSubscribe { isLoading.value = true }
-            .doOnSuccess { isLoading.value = false }
-            .subscribe { task ->
-                attachmentRetrofit.findAllByTaskId(id).subscribe { attachments ->
-                    this.attachments.data = attachments.toMutableList()
-                }
-                userRetrofit.findAllByTaskId(task.id).subscribe { participants ->
-                    this.participants.value = participants
-                }
-                this.task.value = task
-            }
+            .doOnComplete { isLoading.value = false }
+            .subscribe { this.task.value = task }
         clearOnDestroy(disposable)
     }
 
@@ -168,8 +167,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     }
 
     fun showHistory() {
-        val filterActions = "addAttachmentToCard,createCard,addMemberToCard,updateCard:desc"
-        val disposable = historyRetrofit.findAllByTaskId(task.value!!.id, filterActions)
+        val disposable = historyRetrofit.findAllByTaskId(task.value!!.id)
             .doOnSubscribe { isLoading.value = true }
             .doOnSuccess { isLoading.value = false }
             .subscribe { historyList ->

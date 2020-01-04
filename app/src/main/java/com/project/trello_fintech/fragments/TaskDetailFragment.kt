@@ -22,6 +22,7 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.AttachmentsAdapter
 import com.project.trello_fintech.adapters.ParticipantsAdapter
+import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.toDefaultFormat
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
@@ -56,9 +57,9 @@ fun TextView.setDate(date: Date?) {
 class TaskDetailFragment: Fragment() {
 
     companion object {
-        private const val TASK_ID_ARG = "taskId"
-        fun create(taskId: String): TaskDetailFragment {
-            val bundle = Bundle().apply { putString(TASK_ID_ARG, taskId) }
+        private const val TASK_ARG = "task"
+        fun create(task: Task): TaskDetailFragment {
+            val bundle = Bundle().apply { putSerializable(TASK_ARG, task) }
             return TaskDetailFragment().apply { arguments = bundle }
         }
     }
@@ -90,7 +91,8 @@ class TaskDetailFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         MainActivity.component.inject(this)
-        requireArguments().getString(TASK_ID_ARG)?.let { taskDetailViewModel.attachTask(it) }
+        requireArguments().getSerializable(TASK_ARG)?.let { taskDetailViewModel.attachTask(it as Task) }
+
         binding.setVariable(BR.viewModel, taskDetailViewModel)
 
         attachmentsAdapter = AttachmentsAdapter(taskDetailViewModel)

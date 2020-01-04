@@ -10,14 +10,19 @@ import java.util.*
 
 interface TaskHistoryApi {
 
-    @GET("cards/{id}/actions")
-    fun findAllByTaskId(@Path("id") id: String,
-                        @Query("filter") filter: String = "all"): Single<List<Task.History>>
+    @GET("cards/{id}/actions?filter=${Task.History.TYPES}")
+    fun findAllByTaskId(@Path("id") id: String): Single<List<Task.History>>
 
     @GET("cards/{id}/actions")
-    fun findHistoryByTypeAndTaskId(@Path("id") taskId: String,
-                                   @Query("filter") type: String): Single<List<Task.History>>
+    fun findAllByTypeAndTaskId(@Path("id") taskId: String,
+                               @Query("filter") type: String): Single<List<Task.History>>
 }
 
 fun TaskHistoryApi.findCreationHistoryByTaskId(taskId: String): Single<Date> =
-    findHistoryByTypeAndTaskId(taskId, "createCard").map { it[0].date }
+    findAllByTypeAndTaskId(taskId, "createCard")
+        .flatMap {
+            if (it.isEmpty())
+                findAllByTypeAndTaskId(taskId, "convertToCardFromCheckItem").map { it.first().date }
+            else
+                Single.just(it.first().date)
+        }
