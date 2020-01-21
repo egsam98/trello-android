@@ -33,7 +33,7 @@ object ChecklistsAdapter: RecyclerView.Adapter<ChecklistsAdapter.ViewHolder>() {
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val checklist = data[position]
         with(holder) {
-            sectionView.text = checklist.title
+            sectionView.setText(checklist.title)
             sectionView.setOnClickListener {
                 checkitems.visibility = if (checkitems.isShown) View.GONE else View.VISIBLE
             }
