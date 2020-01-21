@@ -21,6 +21,7 @@ import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.AttachmentsAdapter
+import com.project.trello_fintech.adapters.ChecklistsAdapter
 import com.project.trello_fintech.adapters.ParticipantsAdapter
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.toDefaultFormat
@@ -144,12 +145,20 @@ class TaskDetailFragment: Fragment() {
             }
         }
 
+        view.findViewById<RecyclerView>(R.id.checklists).apply {
+            layoutManager = LinearLayoutManager(cxt)
+            adapter = ChecklistsAdapter
+        }
+
         val participantsAdapter = ParticipantsAdapter(this)
         view.findViewById<RecyclerView>(R.id.participants).apply {
             layoutManager = LinearLayoutManager(cxt, RecyclerView.HORIZONTAL, false)
             adapter = participantsAdapter
         }
 
+        taskDetailViewModel.checklists.observe(viewLifecycleOwner, Observer {
+            ChecklistsAdapter.data = it
+        })
         taskDetailViewModel.participants.observe(viewLifecycleOwner, Observer {
             participantsAdapter.data = it
         })

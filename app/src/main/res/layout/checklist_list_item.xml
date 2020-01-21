@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_height="wrap_content"
+              android:layout_width="match_parent">
+    <com.project.trello_fintech.views.TaskDetailSectionView
+           android:id="@+id/title"
+           app:cardUseCompatPadding="true"
+           app:iconSrc="@android:drawable/checkbox_on_background"
+           android:layout_height="wrap_content"
+           android:layout_width="match_parent" />
+    <com.daimajia.numberprogressbar.NumberProgressBar
+            android:id="@+id/checklist_progress"
+            android:padding="10dp"
+            app:progress_reached_color="@color/colorGreenDark"
+            app:progress_text_size="15sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/checkitems"
+            android:visibility="gone"
+            android:nestedScrollingEnabled="false"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
+</LinearLayout>

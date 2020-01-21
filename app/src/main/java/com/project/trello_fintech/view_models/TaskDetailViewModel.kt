@@ -22,9 +22,11 @@ import java.io.InputStream
 import java.lang.IllegalArgumentException
 import com.project.trello_fintech.R
 import com.project.trello_fintech.api.*
+import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.User
 import io.reactivex.Observable
 import io.reactivex.functions.BiFunction
+import io.reactivex.functions.Function3
 
 
 /**
@@ -48,18 +50,11 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     var task = MutableLiveData<Task>(Task())
     private val attachments = LiveList<Task.Attachment>()
 
-    private val attachmentRetrofit by lazy {
-        retrofitClient.create<TaskAttachmentApi>(onError)
-    }
-    private val taskRetrofit by lazy {
-        retrofitClient.create<TaskApi>(onError)
-    }
-    private val historyRetrofit by lazy {
-        retrofitClient.create<TaskHistoryApi>(onError)
-    }
-    private val userRetrofit by lazy {
-        retrofitClient.create<UserApi>(onError)
-    }
+    private val attachmentRetrofit by lazy { retrofitClient.create<TaskAttachmentApi>(onError) }
+    private val taskRetrofit by lazy { retrofitClient.create<TaskApi>(onError) }
+    private val historyRetrofit by lazy { retrofitClient.create<TaskHistoryApi>(onError) }
+    private val userRetrofit by lazy { retrofitClient.create<UserApi>(onError) }
+    private val checklistRetrofit by lazy { retrofitClient.create<ChecklistApi>(onError) }
 
     val onError = LiveEvent<Pair<String, Int?>>()
     val onAttachmentClick = LiveEvent<Task.Attachment>()
@@ -70,13 +65,17 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     val historyList = MutableLiveData<List<Task.History>>()
     val isLoading = MutableLiveData<Boolean>(false)
     val participants = MutableLiveData<List<User>>()
+    val checklists = MutableLiveData<List<Checklist>>()
 
     fun attachTask(task: Task) {
         val s1 = attachmentRetrofit.findAllByTaskId(task.id).toObservable()
         val s2 = userRetrofit.findAllByTaskId(task.id).toObservable()
-        val disposable = Observable.zip<List<Task.Attachment>, List<User>, Unit>(s1, s2, BiFunction { attachments, participants ->
+        val s3 = checklistRetrofit.findAllByTaskId(task.id).toObservable()
+        val disposable = Observable.zip<List<Task.Attachment>, List<User>, List<Checklist>, Unit> (s1, s2, s3,
+            Function3 { attachments, participants, checklists ->
                 this.attachments.data = attachments.toMutableList()
                 this.participants.value = participants
+                this.checklists.value = checklists
             })
             .doOnSubscribe { isLoading.value = true }
             .doOnComplete { isLoading.value = false }
