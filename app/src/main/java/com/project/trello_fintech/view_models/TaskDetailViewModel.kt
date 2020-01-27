@@ -24,6 +24,7 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.api.*
 import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.User
+import com.project.trello_fintech.utils.update
 import io.reactivex.Observable
 import io.reactivex.functions.Function3
 
@@ -171,6 +172,19 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
             .subscribe { historyList ->
                 this.historyList.value = historyList
                 onOpenHistory.emit()
+            }
+        clearOnDestroy(disposable)
+    }
+
+    fun updateChecklistTitle(id: String, newTitle: String) {
+        val disposable = checklistRetrofit.updateTitle(id, newTitle)
+            .doOnSubscribe { isLoading.value = true }
+            .doOnComplete { isLoading.value = false }
+            .subscribe {
+                checklists.value?.find { it.id == id }?.let {
+                    it.title = newTitle
+                    checklists.update()
+                }
             }
         clearOnDestroy(disposable)
     }

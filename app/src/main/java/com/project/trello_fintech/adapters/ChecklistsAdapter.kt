@@ -44,7 +44,7 @@ class ChecklistsAdapter(private val fragment: TaskDetailFragment): RecyclerView.
 
             sectionView.menuView.setOnMenuItemClickListener {
                 if (it.itemId == R.id.edit_checklist)
-                    fragment.showChecklistDialog(checklist.title)
+                    fragment.showChecklistDialog(checklist)
                 true
             }
 

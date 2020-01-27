@@ -23,6 +23,7 @@ import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.AttachmentsAdapter
 import com.project.trello_fintech.adapters.ChecklistsAdapter
 import com.project.trello_fintech.adapters.ParticipantsAdapter
+import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.toDefaultFormat
 import com.project.trello_fintech.view_models.TaskDetailViewModel
@@ -199,8 +200,8 @@ class TaskDetailFragment: Fragment() {
         fragment.show(childFragmentManager, null)
     }
 
-    fun showChecklistDialog(checklistTitle: String) {
-        val fragment = ChecklistDialogFragment.create(checklistTitle)
+    fun showChecklistDialog(checklist: Checklist) {
+        val fragment = ChecklistDialogFragment.create(checklist)
         fragment.show(childFragmentManager, null)
     }
 }

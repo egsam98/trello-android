@@ -4,11 +4,13 @@ import com.google.gson.annotations.SerializedName
 
 /**
  * Перечень действий для выполнения для одной конкретной задачи
+ * @property id String
  * @property title String
  * @property items List<Item>
  */
 data class Checklist(
-    @SerializedName("name") val title: String,
+    @SerializedName("id") val id: String,
+    @SerializedName("name") var title: String,
     @SerializedName("checkItems") val items: List<Item>
 ) {
 
