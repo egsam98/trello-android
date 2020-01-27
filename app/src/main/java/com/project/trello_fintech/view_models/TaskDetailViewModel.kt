@@ -25,7 +25,6 @@ import com.project.trello_fintech.api.*
 import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.User
 import io.reactivex.Observable
-import io.reactivex.functions.BiFunction
 import io.reactivex.functions.Function3
 
 

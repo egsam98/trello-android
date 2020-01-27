@@ -145,9 +145,10 @@ class TaskDetailFragment: Fragment() {
             }
         }
 
+        val checklistsAdapter = ChecklistsAdapter(this)
         view.findViewById<RecyclerView>(R.id.checklists).apply {
             layoutManager = LinearLayoutManager(cxt)
-            adapter = ChecklistsAdapter
+            adapter = checklistsAdapter
         }
 
         val participantsAdapter = ParticipantsAdapter(this)
@@ -157,7 +158,7 @@ class TaskDetailFragment: Fragment() {
         }
 
         taskDetailViewModel.checklists.observe(viewLifecycleOwner, Observer {
-            ChecklistsAdapter.data = it
+            checklistsAdapter.data = it
         })
         taskDetailViewModel.participants.observe(viewLifecycleOwner, Observer {
             participantsAdapter.data = it
@@ -195,6 +196,11 @@ class TaskDetailFragment: Fragment() {
     fun selectParticipants() {
         val task = taskDetailViewModel.task.value!!
         val fragment = ParticipantsDialogFragment.create(task)
+        fragment.show(childFragmentManager, null)
+    }
+
+    fun showChecklistDialog(checklistTitle: String) {
+        val fragment = ChecklistDialogFragment.create(checklistTitle)
         fragment.show(childFragmentManager, null)
     }
 }

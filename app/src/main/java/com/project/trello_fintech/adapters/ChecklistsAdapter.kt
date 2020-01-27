@@ -1,8 +1,6 @@
 package com.project.trello_fintech.adapters
 
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -10,13 +8,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.daimajia.numberprogressbar.NumberProgressBar
 import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.R
+import com.project.trello_fintech.fragments.TaskDetailFragment
 import com.project.trello_fintech.views.TaskDetailSectionView
 
 
 /**
  * Адаптер списков действий для выполнения одной задачи
  */
-object ChecklistsAdapter: RecyclerView.Adapter<ChecklistsAdapter.ViewHolder>() {
+class ChecklistsAdapter(private val fragment: TaskDetailFragment): RecyclerView.Adapter<ChecklistsAdapter.ViewHolder>() {
+
     class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val sectionView: TaskDetailSectionView = view.findViewById(R.id.title)
         val checklistProgressBar: NumberProgressBar = view.findViewById(R.id.checklist_progress)
@@ -24,10 +24,14 @@ object ChecklistsAdapter: RecyclerView.Adapter<ChecklistsAdapter.ViewHolder>() {
     }
 
     var data: List<Checklist> = listOf()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.checklist_list_item, parent, false)
-        return ViewHolder(view)
+        return ViewHolder(view).apply { sectionView.inflateMenu(R.menu.checklist_actions) }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -37,6 +41,13 @@ object ChecklistsAdapter: RecyclerView.Adapter<ChecklistsAdapter.ViewHolder>() {
             sectionView.setOnClickListener {
                 checkitems.visibility = if (checkitems.isShown) View.GONE else View.VISIBLE
             }
+
+            sectionView.menuView.setOnMenuItemClickListener {
+                if (it.itemId == R.id.edit_checklist)
+                    fragment.showChecklistDialog(checklist.title)
+                true
+            }
+
             checkitems.layoutManager = LinearLayoutManager(checkitems.context)
             checkitems.adapter = CheckitemAdapter(checklistProgressBar).apply { data = checklist.items }
         }

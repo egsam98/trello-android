@@ -6,6 +6,7 @@ import com.project.trello_fintech.di.modules.TrelloApiModule
 import com.project.trello_fintech.di.modules.ViewModelsModule
 import com.project.trello_fintech.di.scopes.MainActivityScope
 import com.project.trello_fintech.fragments.*
+import com.project.trello_fintech.views.TaskDetailSectionView
 import dagger.Subcomponent
 
 
@@ -29,4 +30,5 @@ interface MainActivityComponent {
     fun inject(fragment: TaskHistoryFragment)
     fun inject(fragment: AddTaskDialogFragment)
     fun inject(fragment: ParticipantsDialogFragment)
+    fun inject(view: TaskDetailSectionView)
 }
