@@ -4,8 +4,8 @@ import android.content.Context
 import com.project.trello_fintech.BuildConfig
 import com.project.trello_fintech.R
 import com.project.trello_fintech.api.RetrofitClient
-import com.project.trello_fintech.di.scopes.MainActivityScope
 import com.project.trello_fintech.utils.StringsRepository
+import com.project.trello_fintech.utils.TrelloUtil
 import dagger.Module
 import dagger.Provides
 import okhttp3.Cache
@@ -16,12 +16,10 @@ import javax.inject.Named
 class TrelloApiModule {
 
     @Provides
-    @MainActivityScope
     fun getRetrofitClient(cache: Cache, stringsRepository: StringsRepository) =
         RetrofitClient(cache, stringsRepository)
 
     @Provides
-    @MainActivityScope
     @Named("authUrl")
     fun getAuthUrl(cxt: Context): String {
         val expiration = "30days"
@@ -34,4 +32,7 @@ class TrelloApiModule {
                 "key=${BuildConfig.TRELLO_API_KEY}&" +
                 "return_url=${BuildConfig.TRELLO_URL_CALLBACK}"
     }
+
+    @Provides
+    fun getTrelloUtil(retrofitClient: RetrofitClient) = TrelloUtil(retrofitClient)
 }

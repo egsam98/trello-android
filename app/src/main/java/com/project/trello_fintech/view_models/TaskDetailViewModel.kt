@@ -83,6 +83,13 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
         clearOnDestroy(disposable)
     }
 
+    fun attachTask(taskId: String) {
+        val disposable = taskRetrofit.findById(taskId).subscribe {
+                task -> attachTask(task)
+        }
+        clearOnDestroy(disposable)
+    }
+
     fun observeAttachments(subscribe: (MutableList<Task.Attachment>) -> Unit) {
         val disposable = attachments.observe().subscribe(subscribe)
         clearOnDestroy(disposable)

@@ -1,6 +1,8 @@
 package com.project.trello_fintech.di.components
 
 import com.project.trello_fintech.activities.MainActivity
+import com.project.trello_fintech.adapters.ChecklistAdapter
+import com.project.trello_fintech.adapters.TasksAdapter
 import com.project.trello_fintech.di.modules.MainActivityModule
 import com.project.trello_fintech.di.modules.TrelloApiModule
 import com.project.trello_fintech.di.modules.ViewModelsModule
@@ -33,4 +35,7 @@ interface MainActivityComponent {
     fun inject(fragment: ChecklistDialogFragment)
 
     fun inject(view: TaskDetailSectionView)
+
+    fun inject(adapter: TasksAdapter)
+    fun inject(adapter: ChecklistAdapter)
 }

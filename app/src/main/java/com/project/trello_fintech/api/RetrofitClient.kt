@@ -9,9 +9,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 import com.project.trello_fintech.adapters.RxJava2Adapter
 import com.project.trello_fintech.utils.StringsRepository
 import com.project.trello_fintech.utils.reactive.LiveEvent
+import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import okhttp3.Cache
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.create
 
 
 /**
@@ -57,11 +59,14 @@ class RetrofitClient(cache: Cache, stringsRepository: StringsRepository) {
             .addConverterFactory(GsonConverterFactory.create(gson))
     }
 
-    inline fun <reified T> create(onError: LiveEvent<Pair<String, Int?>>): T {
-        val rxJava2Adapter = RxJava2Adapter(AndroidSchedulers.mainThread(), onError)
+    inline fun <reified T> create(
+        onError: LiveEvent<Pair<String, Int?>>? = null,
+        scheduler: Scheduler = AndroidSchedulers.mainThread()): T {
+
+        val rxJava2Adapter = RxJava2Adapter(scheduler, onError)
         return retrofitBuilder
             .addCallAdapterFactory(rxJava2Adapter)
             .build()
-            .create(T::class.java)
+            .create()
     }
 }

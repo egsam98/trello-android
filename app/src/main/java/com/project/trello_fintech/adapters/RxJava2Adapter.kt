@@ -19,7 +19,7 @@ import java.lang.reflect.Type
  */
 class RxJava2Adapter(
         private val observeOn: Scheduler,
-        private val onError: LiveEvent<Pair<String, Int?>>
+        private val onError: LiveEvent<Pair<String, Int?>>? = null
     ): CallAdapter.Factory() {
 
     private val original = RxJava2CallAdapterFactory.createAsync()
@@ -60,7 +60,7 @@ class RxJava2Adapter(
                 }
                 else -> Pair(t.message.orEmpty(), null)
             }
-            onError.emit(messageAndCode)
+            onError?.emit(messageAndCode)
         }
 
         override fun responseType(): Type = wrapped.responseType()

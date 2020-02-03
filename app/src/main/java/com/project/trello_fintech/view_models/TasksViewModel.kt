@@ -47,7 +47,6 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
 
     private val onDataLoaded = LiveEvent<Unit>()
     val onError = LiveEvent<Pair<String, Int?>>()
-    val onClick = LiveEvent<Task>()
 
     fun load(column: Column) {
         tasks[column] = LiveList()

@@ -6,12 +6,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.woxthebox.draglistview.DragItemAdapter
 import com.project.trello_fintech.R
+import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.ResettableFilter
 import com.project.trello_fintech.utils.ResettableFilterable
 import com.project.trello_fintech.utils.toShortFormat
 import com.project.trello_fintech.view_models.TasksViewModel
+import javax.inject.Inject
 
 
 /**
@@ -24,10 +26,17 @@ import com.project.trello_fintech.view_models.TasksViewModel
 class TasksAdapter(val column: Column, private val tasksViewModel: TasksViewModel, private val maxAttachmentsPreviewNum: Int):
     DragItemAdapter<Task, TasksAdapter.TaskViewHolder>(), ResettableFilterable {
 
-   var data = listOf<Task>()
-    set(value) {
-        field = value
-        itemList = value
+    @Inject
+    lateinit var mainActivity: MainActivity
+
+    var data = listOf<Task>()
+        set(value) {
+            field = value
+            itemList = value
+        }
+
+    init {
+        MainActivity.component.inject(this)
     }
 
 
@@ -56,7 +65,7 @@ class TasksAdapter(val column: Column, private val tasksViewModel: TasksViewMode
             datesView.text = dates
 
             view.setOnClickListener {
-                tasksViewModel.onClick.emit(item)
+                mainActivity.showTaskDetail(item)
             }
             with(item.attachments) {
                 val imageAttachments = asSequence().filter { it.isImage() }.take(2).toList()

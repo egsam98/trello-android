@@ -6,6 +6,10 @@ import io.reactivex.Single
 import retrofit2.http.*
 
 interface TaskApi {
+
+    @GET("cards/{id}")
+    fun findById(@Path("id") id: String): Single<Task>
+
     @GET("list/{id}/cards")
     fun findAllByColumnId(@Path("id") id: String): Single<List<Task>>
 

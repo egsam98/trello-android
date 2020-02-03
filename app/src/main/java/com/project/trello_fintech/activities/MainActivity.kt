@@ -75,10 +75,6 @@ class MainActivity : AppCompatActivity() {
             showTasks(it)
         })
 
-        tasksViewModel.onClick.observe(this, Observer {
-            showTaskDetail(it)
-        })
-
         taskDetailViewModel.onAttachmentClick.observe(this, Observer {
             showAttachmentFullScreen(it)
         })
@@ -134,10 +130,20 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    private fun showTaskDetail(task: Task) {
+    fun showTaskDetail(task: Task) {
+        val fragment = TaskDetailFragment.create(task)
+        attachTaskDetailFragment(fragment)
+    }
+
+    fun showTaskDetail(taskId: String) {
+        val fragment = TaskDetailFragment.create(taskId)
+        attachTaskDetailFragment(fragment)
+    }
+
+    private fun attachTaskDetailFragment(taskDetailFragment: TaskDetailFragment) {
         supportFragmentManager
             .beginTransaction()
-            .replace(R.id.fragment_container, TaskDetailFragment.create(task), "taskDetail")
+            .replace(R.id.fragment_container, taskDetailFragment, "taskDetail")
             .addToBackStack(null)
             .commit()
     }

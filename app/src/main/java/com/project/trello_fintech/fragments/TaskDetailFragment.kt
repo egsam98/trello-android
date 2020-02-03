@@ -60,8 +60,13 @@ class TaskDetailFragment: Fragment() {
 
     companion object {
         private const val TASK_ARG = "task"
+        private const val TASK_ID_ARG = "taskId"
         fun create(task: Task): TaskDetailFragment {
             val bundle = Bundle().apply { putSerializable(TASK_ARG, task) }
+            return TaskDetailFragment().apply { arguments = bundle }
+        }
+        fun create(taskId: String): TaskDetailFragment {
+            val bundle = Bundle().apply { putString(TASK_ID_ARG, taskId) }
             return TaskDetailFragment().apply { arguments = bundle }
         }
     }
@@ -75,27 +80,33 @@ class TaskDetailFragment: Fragment() {
     @Inject
     lateinit var cleanableViewModelProvider: CleanableViewModelProvider
 
-    private lateinit var attachmentsAdapter: AttachmentsAdapter
-
-    private lateinit var binding: ViewDataBinding
+    private var attachmentsAdapter: AttachmentsAdapter? = null
+    private var binding: ViewDataBinding? = null
 
     private val taskDetailViewModel by lazy {
-        cleanableViewModelProvider.get<TaskDetailViewModel>(viewLifecycleOwner)
+        cleanableViewModelProvider!!.get<TaskDetailViewModel>(viewLifecycleOwner)
     }
 
     private var requestPermissionsUri: Uri? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = DataBindingUtil.inflate<ViewDataBinding>(inflater, R.layout.fragment_task_detail, container, false)
-        binding.lifecycleOwner = this
-        return binding.root
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_task_detail, container, false)
+        binding!!.lifecycleOwner = this
+        return binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         MainActivity.component.inject(this)
-        requireArguments().getSerializable(TASK_ARG)?.let { taskDetailViewModel.attachTask(it as Task) }
+        val args = requireArguments()
+        args.getSerializable(TASK_ARG)
+            ?.let {
+                taskDetailViewModel.attachTask(it as Task)
+            }
+            ?:run {
+                args.getString(TASK_ID_ARG)?.let { taskDetailViewModel.attachTask(it) }
+            }
 
-        binding.setVariable(BR.viewModel, taskDetailViewModel)
+        binding?.setVariable(BR.viewModel, taskDetailViewModel)
 
         attachmentsAdapter = AttachmentsAdapter(taskDetailViewModel)
 
@@ -125,7 +136,7 @@ class TaskDetailFragment: Fragment() {
             startActivityForResult(intent, UPLOAD_ATTACHMENT_REQUEST)
         })
         taskDetailViewModel.observeAttachments {
-            attachmentsAdapter.data = it
+            attachmentsAdapter?.data = it
         }
 
         view.findViewById<TextInputEditText>(R.id.description).apply {
@@ -169,6 +180,12 @@ class TaskDetailFragment: Fragment() {
     override fun onPause() {
         super.onPause()
         taskDetailViewModel.updateDescription()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        attachmentsAdapter = null
+        binding = null
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
