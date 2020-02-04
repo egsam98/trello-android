@@ -26,3 +26,13 @@ fun isInternetAvailable(): Boolean {
 fun MutableLiveData<*>.update() {
     this.value = this.value
 }
+
+infix fun <T> MutableLiveData<MutableList<T>>.add(elem: T) {
+    value?.add(elem)
+    update()
+}
+
+infix fun <T> MutableLiveData<MutableList<T>>.remove(elem: T) {
+    value?.remove(elem)
+    update()
+}

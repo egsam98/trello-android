@@ -40,7 +40,7 @@ import com.project.trello_fintech.views.ClearableSearchView
  * @property tasksViewModel TasksViewModel
  * @property boardView BoardView?
  */
-class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener {
+class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener, DrawerMenuOwner {
 
     companion object {
         private const val BOARD_ARG = "board"
@@ -187,7 +187,7 @@ class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener
         fragment.show(childFragmentManager, null)
     }
 
-    private fun NavigationView.setupMenu() {
+    override fun NavigationView.setupMenu() {
         menu.clear()
         inflateMenu(R.menu.tasks)
         setNavigationItemSelectedListener(this@TasksFragment)

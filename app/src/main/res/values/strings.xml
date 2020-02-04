@@ -19,4 +19,5 @@
     <string name="build_chart">Построить диаграмму</string>
     <string name="Gantt">Диаграмма Гантта</string>
     <string name="checklist_title">Чек-лист</string>
+    <string name="add_checklist">Добавить чек-лист</string>
 </resources>

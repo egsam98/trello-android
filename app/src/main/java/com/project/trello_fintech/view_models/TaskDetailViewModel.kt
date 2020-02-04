@@ -24,6 +24,8 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.api.*
 import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.User
+import com.project.trello_fintech.utils.add
+import com.project.trello_fintech.utils.remove
 import com.project.trello_fintech.utils.update
 import io.reactivex.Observable
 import io.reactivex.functions.Function3
@@ -65,7 +67,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     val historyList = MutableLiveData<List<Task.History>>()
     val isLoading = MutableLiveData<Boolean>(false)
     val participants = MutableLiveData<List<User>>()
-    val checklists = MutableLiveData<List<Checklist>>()
+    val checklists = MutableLiveData<MutableList<Checklist>>()
 
     fun attachTask(task: Task) {
         val s1 = attachmentRetrofit.findAllByTaskId(task.id).toObservable()
@@ -75,7 +77,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
             Function3 { attachments, participants, checklists ->
                 this.attachments.data = attachments.toMutableList()
                 this.participants.value = participants
-                this.checklists.value = checklists
+                this.checklists.value = checklists.toMutableList()
             })
             .doOnSubscribe { isLoading.value = true }
             .doOnComplete { isLoading.value = false }
@@ -183,6 +185,13 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
         clearOnDestroy(disposable)
     }
 
+    fun createChecklist(title: String) {
+        val disposable = checklistRetrofit.create(title, task.value!!.id).subscribe { checklist ->
+            checklists add checklist
+        }
+        clearOnDestroy(disposable)
+    }
+
     fun updateChecklistTitle(id: String, newTitle: String) {
         val disposable = checklistRetrofit.updateTitle(id, newTitle)
             .doOnSubscribe { isLoading.value = true }
@@ -193,6 +202,14 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
                     checklists.update()
                 }
             }
+        clearOnDestroy(disposable)
+    }
+
+    fun deleteChecklist(id: String) {
+        val disposable = checklistRetrofit.delete(id).subscribe {
+            checklists.value!!.find { it.id == id }
+                ?.let { checklists remove it }
+        }
         clearOnDestroy(disposable)
     }
 }

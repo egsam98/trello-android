@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.textfield.TextInputEditText
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
@@ -56,7 +57,7 @@ fun TextView.setDate(date: Date?) {
  * @property taskDetailViewModel TaskDetailViewModel
  * @property requestPermissionsUri Uri?
  */
-class TaskDetailFragment: Fragment() {
+class TaskDetailFragment: Fragment(), DrawerMenuOwner {
 
     companion object {
         private const val TASK_ARG = "task"
@@ -175,6 +176,8 @@ class TaskDetailFragment: Fragment() {
         taskDetailViewModel.participants.observe(viewLifecycleOwner, Observer {
             participantsAdapter.data = it
         })
+
+        activity.navigationView.setupMenu()
     }
 
     override fun onPause() {
@@ -211,13 +214,23 @@ class TaskDetailFragment: Fragment() {
         }
     }
 
+    override fun NavigationView.setupMenu() {
+        inflateMenu(R.menu.task_detail)
+        setNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.add_checklist -> showChecklistDialog()
+            }
+            true
+        }
+    }
+
     fun selectParticipants() {
         val task = taskDetailViewModel.task.value!!
         val fragment = ParticipantsDialogFragment.create(task)
         fragment.show(childFragmentManager, null)
     }
 
-    fun showChecklistDialog(checklist: Checklist) {
+    fun showChecklistDialog(checklist: Checklist? = null) {
         val fragment = ChecklistDialogFragment.create(checklist)
         fragment.show(childFragmentManager, null)
     }
