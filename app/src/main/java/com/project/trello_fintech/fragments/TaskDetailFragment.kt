@@ -85,7 +85,7 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
     private var binding: ViewDataBinding? = null
 
     private val taskDetailViewModel by lazy {
-        cleanableViewModelProvider!!.get<TaskDetailViewModel>(viewLifecycleOwner)
+        cleanableViewModelProvider.get<TaskDetailViewModel>(viewLifecycleOwner)
     }
 
     private var requestPermissionsUri: Uri? = null
@@ -158,7 +158,7 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
             }
         }
 
-        val checklistsAdapter = ChecklistsAdapter(this)
+        val checklistsAdapter = ChecklistsAdapter(this, taskDetailViewModel)
         view.findViewById<RecyclerView>(R.id.checklists).apply {
             layoutManager = LinearLayoutManager(cxt)
             adapter = checklistsAdapter
@@ -232,6 +232,11 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
 
     fun showChecklistDialog(checklist: Checklist? = null) {
         val fragment = ChecklistDialogFragment.create(checklist)
+        fragment.show(childFragmentManager, null)
+    }
+
+    fun showCheckitemDialog(checklist: Checklist, checkitem: Checklist.Item? = null) {
+        val fragment = CheckitemDialogFragment.create(checklist, checkitem)
         fragment.show(childFragmentManager, null)
     }
 }

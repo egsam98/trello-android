@@ -18,4 +18,15 @@ interface ChecklistApi {
 
     @DELETE("checklists/{id}")
     fun delete(@Path("id") id: String): Completable
+
+    @POST("checklists/{checklistId}/checkItems")
+    fun createItem(@Path("checklistId") checklistId: String, @Query("name") text: String): Single<Checklist.Item>
+
+    @PUT("cards/{taskId}/checkItem/{checkitemId}")
+    fun updateItem(@Path("taskId") taskId: String,
+                   @Path("checkitemId") checkitemId: String,
+                   @Query("name") text: String): Completable
+
+    @DELETE("checklists/{checklistId}/checkItems/{checkitemId}")
+    fun deleteItem(@Path("checklistId") checklistId: String, @Path("checkitemId") checkitemId: String): Completable
 }

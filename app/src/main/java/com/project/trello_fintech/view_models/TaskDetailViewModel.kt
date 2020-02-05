@@ -212,4 +212,29 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
         }
         clearOnDestroy(disposable)
     }
+
+    fun createCheckitem(checklistId: String, text: String) {
+        val disposable = checklistRetrofit.createItem(checklistId, text).subscribe { checkitem ->
+            val checklist = checklists.value!!.find { it.id == checklistId }
+            checklist?.items?.add(checkitem)
+            checklists.update()
+        }
+        clearOnDestroy(disposable)
+    }
+
+    fun updateCheckitem(checkitemId: String, title: String) {
+        checklistRetrofit.updateItem(task.value!!.id, checkitemId, title).subscribe()
+        val changedCheckitem = checklists.value!!.flatMap { it.items }.find { it.id == checkitemId }
+        changedCheckitem?.title = title
+        checklists.update()
+    }
+
+    fun deleteCheckitem(checklistId: String, checkitemId: String) {
+        checklistRetrofit.deleteItem(checklistId, checkitemId).subscribe()
+        checklists.value!!.find { it.id == checklistId }?.let {
+            val deletedCheckitem = it.items.find { checkitem -> checkitem.id == checkitemId }
+            it.items.remove(deletedCheckitem)
+            checklists.update()
+        }
+    }
 }

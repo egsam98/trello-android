@@ -33,6 +33,7 @@ interface MainActivityComponent {
     fun inject(fragment: AddTaskDialogFragment)
     fun inject(fragment: ParticipantsDialogFragment)
     fun inject(fragment: ChecklistDialogFragment)
+    fun inject(fragment: CheckitemDialogFragment)
 
     fun inject(view: TaskDetailSectionView)
 
