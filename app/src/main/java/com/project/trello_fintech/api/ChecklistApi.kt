@@ -25,7 +25,7 @@ interface ChecklistApi {
     @PUT("cards/{taskId}/checkItem/{checkitemId}")
     fun updateItem(@Path("taskId") taskId: String,
                    @Path("checkitemId") checkitemId: String,
-                   @Query("name") text: String): Completable
+                   @QueryMap params: Map<String, String>): Completable
 
     @DELETE("checklists/{checklistId}/checkItems/{checkitemId}")
     fun deleteItem(@Path("checklistId") checklistId: String, @Path("checkitemId") checkitemId: String): Completable

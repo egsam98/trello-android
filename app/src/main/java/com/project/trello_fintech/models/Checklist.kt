@@ -24,10 +24,21 @@ data class Checklist(
     data class Item(
         @SerializedName("id") val id: String,
         @SerializedName("name") var title: String,
-        @SerializedName("state") private val state: String
+        @SerializedName("state") private var state: String
     ) {
+        companion object {
+            const val COMPLETE = "complete"
+            const val INCOMPLETE = "incomplete"
+            fun stateOf(isChecked: Boolean): String {
+                return if (isChecked) COMPLETE else INCOMPLETE
+            }
+        }
 
         val isChecked: Boolean
-            get() = state == "complete"
+            get() = state == COMPLETE
+
+        fun setState(isChecked: Boolean) {
+            state = stateOf(isChecked)
+        }
     }
 }

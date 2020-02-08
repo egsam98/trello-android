@@ -222,10 +222,16 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
         clearOnDestroy(disposable)
     }
 
-    fun updateCheckitem(checkitemId: String, title: String) {
-        checklistRetrofit.updateItem(task.value!!.id, checkitemId, title).subscribe()
-        val changedCheckitem = checklists.value!!.flatMap { it.items }.find { it.id == checkitemId }
-        changedCheckitem?.title = title
+    fun updateCheckitem(checkitemId: String, title: String? = null, isChecked: Boolean? = null) {
+        val params = mutableMapOf<String, String>()
+        title?.let { params["name"] = it }
+        isChecked?.let { params["state"] = Checklist.Item.stateOf(it) }
+        checklistRetrofit.updateItem(task.value!!.id, checkitemId, params).subscribe()
+
+        val checkitem = checklists.value!!.flatMap { it.items }.find { it.id == checkitemId }
+        title?.let { checkitem?.title = it }
+        isChecked?.let { checkitem?.setState(it) }
+
         checklists.update()
     }
 

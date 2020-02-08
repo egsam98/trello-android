@@ -61,7 +61,7 @@ class CheckitemDialogFragment: DialogFragment() {
                 val newTitle = dialogText.text.toString()
                 checklistId?.let {
                     checkitemId?.let {
-                        taskDetailViewModel.updateCheckitem(it, newTitle)
+                        taskDetailViewModel.updateCheckitem(it, title = newTitle)
                     }?: run {
                         taskDetailViewModel.createCheckitem(checklistId, newTitle)
                     }

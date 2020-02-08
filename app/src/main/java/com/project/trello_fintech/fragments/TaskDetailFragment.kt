@@ -84,7 +84,7 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
     private var attachmentsAdapter: AttachmentsAdapter? = null
     private var binding: ViewDataBinding? = null
 
-    private val taskDetailViewModel by lazy {
+    val taskDetailViewModel by lazy {
         cleanableViewModelProvider.get<TaskDetailViewModel>(viewLifecycleOwner)
     }
 
@@ -158,7 +158,7 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
             }
         }
 
-        val checklistsAdapter = ChecklistsAdapter(this, taskDetailViewModel)
+        val checklistsAdapter = ChecklistsAdapter(this)
         view.findViewById<RecyclerView>(R.id.checklists).apply {
             layoutManager = LinearLayoutManager(cxt)
             adapter = checklistsAdapter

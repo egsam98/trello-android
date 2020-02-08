@@ -18,20 +18,19 @@ import com.project.trello_fintech.views.TaskDetailSectionView
 import javax.inject.Inject
 import com.project.trello_fintech.R
 import com.project.trello_fintech.listeners.CheckitemTouchHelperCallback
-import com.project.trello_fintech.view_models.TaskDetailViewModel
 
 
 /**
  * Адаптер списков действий для выполнения одной задачи
+ * @property fragment TaskDetailFragment
+ * @property data List<Checklist>
  */
-class ChecklistsAdapter(
-    private val fragment: TaskDetailFragment,
-    private val taskDetailViewModel: TaskDetailViewModel): RecyclerView.Adapter<ChecklistsAdapter.ViewHolder>() {
+class ChecklistsAdapter(private val fragment: TaskDetailFragment): RecyclerView.Adapter<ChecklistsAdapter.ViewHolder>() {
 
     class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val sectionView: TaskDetailSectionView = view.findViewById(R.id.title)
         val checklistProgressBar: NumberProgressBar = view.findViewById(R.id.checklist_progress)
-        val checkitems: RecyclerView = view.findViewById(R.id.checkitems)
+        val checkitemsView: RecyclerView = view.findViewById(R.id.checkitems)
     }
 
     var data: List<Checklist> = listOf()
@@ -50,7 +49,7 @@ class ChecklistsAdapter(
         with(holder) {
             sectionView.setText(checklist.title)
             sectionView.setOnClickListener {
-                checkitems.visibility = if (checkitems.isShown) View.GONE else View.VISIBLE
+                checkitemsView.visibility = if (checkitemsView.isShown) View.GONE else View.VISIBLE
             }
 
             sectionView.menuView.setOnMenuItemClickListener {
@@ -58,13 +57,20 @@ class ChecklistsAdapter(
                 true
             }
 
-            checkitems.layoutManager = LinearLayoutManager(checkitems.context)
-            checkitems.adapter = ChecklistAdapter(checklist, checklistProgressBar, fragment).apply { data = checklist.items }
-            ItemTouchHelper(CheckitemTouchHelperCallback(taskDetailViewModel)).attachToRecyclerView(checkitems)
+            checklistProgressBar.byCheckitemsCheckedCount(checklist.items)
+
+            checkitemsView.layoutManager = LinearLayoutManager(checkitemsView.context)
+            checkitemsView.adapter = ChecklistAdapter(checklist, checklistProgressBar, fragment).apply { data = checklist.items }
+            ItemTouchHelper(CheckitemTouchHelperCallback(fragment.taskDetailViewModel)).attachToRecyclerView(checkitemsView)
         }
     }
 
     override fun getItemCount(): Int = data.size
+
+    private fun NumberProgressBar.byCheckitemsCheckedCount(checkitems: List<Checklist.Item>) {
+        val checkedCount = checkitems.count { it.isChecked }
+        progress = (checkedCount.toFloat() / checkitems.size.toFloat() * 100).toInt()
+    }
 
     private fun handleSectionViewMenuClick(menuItem: MenuItem, checklist: Checklist) {
         when (menuItem.itemId) {
@@ -77,7 +83,11 @@ class ChecklistsAdapter(
 
 /**
  * Адаптер одного списка действий
+ * @property checklist Checklist
  * @property checklistProgressBar NumberProgressBar
+ * @property fragment TaskDetailFragment
+ * @property mainActivity MainActivity
+ * @property trelloUtil TrelloUtil
  * @property data List<Item>
  * @property checkedCount Int
  */
@@ -86,6 +96,7 @@ class ChecklistAdapter (
         private val checklistProgressBar: NumberProgressBar,
         private val fragment: TaskDetailFragment
     ): RecyclerView.Adapter<ChecklistAdapter.ViewHolder>() {
+
     class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val checkBox: CheckBox = view.findViewById(R.id.checkbox)
         val textView: TextView = view.findViewById(R.id.text)
@@ -131,6 +142,7 @@ class ChecklistAdapter (
 
             checkBox.isChecked = checkitem.isChecked
             checkBox.setOnCheckedChangeListener { _, isChecked ->
+                fragment.taskDetailViewModel.updateCheckitem(checkitem.id, isChecked = isChecked)
                 checkedCount += if (isChecked) 1 else -1
                 checklistProgressBar.progress = (checkedCount.toFloat() / itemCount.toFloat() * 100).toInt()
             }
