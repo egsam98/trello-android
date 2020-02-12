@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "401578324129",
+    "firebase_url": "https://trellofintech.firebaseio.com",
+    "project_id": "trellofintech",
+    "storage_bucket": "trellofintech.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:401578324129:android:1e550d233d4b7a8b2bc0e0",
+        "android_client_info": {
+          "package_name": "com.project.trello_fintech"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "401578324129-96io1r3o69bgdtd9qjbukkjgcmdtqf25.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXiw0Tm5S0eOzFzWy3yXQmM9tWPQwfYaA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "401578324129-96io1r3o69bgdtd9qjbukkjgcmdtqf25.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

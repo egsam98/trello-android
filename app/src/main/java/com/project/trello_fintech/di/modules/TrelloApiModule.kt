@@ -4,20 +4,14 @@ import android.content.Context
 import com.project.trello_fintech.BuildConfig
 import com.project.trello_fintech.R
 import com.project.trello_fintech.api.RetrofitClient
-import com.project.trello_fintech.utils.StringsRepository
 import com.project.trello_fintech.utils.TrelloUtil
 import dagger.Module
 import dagger.Provides
-import okhttp3.Cache
 import javax.inject.Named
 
 
 @Module
 class TrelloApiModule {
-
-    @Provides
-    fun getRetrofitClient(cache: Cache, stringsRepository: StringsRepository) =
-        RetrofitClient(cache, stringsRepository)
 
     @Provides
     @Named("authUrl")

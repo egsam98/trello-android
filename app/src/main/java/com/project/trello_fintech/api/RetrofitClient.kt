@@ -1,7 +1,6 @@
 package com.project.trello_fintech.api
 
 import android.util.Log
-import com.google.gson.GsonBuilder
 import com.project.trello_fintech.BuildConfig
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -14,6 +13,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import okhttp3.Cache
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.create
+import javax.inject.Inject
 
 
 /**
@@ -22,13 +22,17 @@ import retrofit2.create
  * @property retrofitBuilder Builder
  * @constructor
  */
-class RetrofitClient(cache: Cache, stringsRepository: StringsRepository) {
+class RetrofitClient @Inject constructor(
+    cache: Cache,
+    stringsRepository: StringsRepository,
+    gsonConverterFactory: GsonConverterFactory) {
 
     private val loggingInterceptor = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
         Log.i("OkHttp", it)
     }).apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
+
 
     val retrofitBuilder: Retrofit.Builder by lazy {
         val httpClient = OkHttpClient.Builder()
@@ -51,12 +55,10 @@ class RetrofitClient(cache: Cache, stringsRepository: StringsRepository) {
             .addInterceptor(loggingInterceptor)
             .build()
 
-        val gson = GsonBuilder().setLenient().create()
-
         Retrofit.Builder()
             .client(httpClient)
             .baseUrl(BuildConfig.TRELLO_BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addConverterFactory(gsonConverterFactory)
     }
 
     inline fun <reified T> create(

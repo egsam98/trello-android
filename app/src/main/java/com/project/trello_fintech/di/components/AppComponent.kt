@@ -2,6 +2,7 @@ package com.project.trello_fintech.di.components
 
 import android.content.Context
 import com.project.trello_fintech.di.modules.*
+import com.project.trello_fintech.view_models.BoardsViewModel
 import dagger.Component
 import javax.inject.Singleton
 
@@ -13,4 +14,6 @@ import javax.inject.Singleton
 interface AppComponent {
     val context: Context
     fun plusMainActivityComponent(mainActivityModule: MainActivityModule): MainActivityComponent
+
+    fun inject(boardsViewModel: BoardsViewModel)
 }
