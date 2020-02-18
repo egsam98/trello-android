@@ -29,7 +29,9 @@ import com.woxthebox.draglistview.DragItem
 import javax.inject.Inject
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.GanttChartActivity
+import com.project.trello_fintech.activities.VideoCallActivity
 import com.project.trello_fintech.listeners.OnTaskSearchListener
+import com.project.trello_fintech.services.FirebaseService
 import com.project.trello_fintech.views.ClearableSearchView
 
 
@@ -56,7 +58,11 @@ class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener
     @Inject
     lateinit var cleanableViewModelProvider: CleanableViewModelProvider
 
+    @Inject
+    lateinit var firebaseService: FirebaseService
+
     private lateinit var tasksViewModel: TasksViewModel
+    private lateinit var selectedBoard: Board
     private var boardView: BoardView? = null
 
     /**
@@ -103,7 +109,7 @@ class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener
             })
         }
 
-        val selectedBoard = requireArguments().getSerializable(BOARD_ARG) as Board
+        selectedBoard = requireArguments().getSerializable(BOARD_ARG) as Board
 
         val prefs = selectedBoard.prefs
         if (prefs != null) {
@@ -160,8 +166,10 @@ class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.gantt_chart)
-            GanttChartActivity.start(requireActivity(), tasksViewModel.tasks)
+        when (item.itemId) {
+            R.id.gantt_chart -> GanttChartActivity.start(activity, tasksViewModel.tasks)
+            R.id.start_or_continue_videocall -> VideoCallActivity.start(activity, selectedBoard)
+        }
         return true
     }
 

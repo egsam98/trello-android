@@ -20,6 +20,14 @@ android {
         buildConfigField "String", "TRELLO_API_KEY", project.property("trello.apiKey")
         buildConfigField "String", "TRELLO_BASE_URL", project.property("trello.baseUrl")
         buildConfigField "String", "TRELLO_URL_CALLBACK", project.property("trello.urlCallback")
+        buildConfigField "String", "OPENTOK_SERVER_BASE_URL", project.property("opentok.serverBaseUrl")
+        buildConfigField "String", "FIREBASE_CLOUD_MESSAGING_SERVER_URL", project.property("firebase.cloudMessagingServerUrl")
+        buildConfigField "String", "FIREBASE_CLOUD_MESSAGING_SERVER_KEY", project.property("firebase.cloudMessagingServerKey")
+
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        buildConfigField "Integer", "OPENTOK_APIKEY", properties["opentok.apiKey"]
+        buildConfigField "String", "OPENTOK_APISECRET", properties["opentok.apiSecret"]
     }
     buildTypes {
         release {
@@ -31,6 +39,11 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        exclude 'META-INF/io.netty.versions.properties'
+        exclude 'META-INF/INDEX.LIST'
     }
 }
 
@@ -64,6 +77,7 @@ dependencies {
     implementation 'com.daimajia.numberprogressbar:library:1.4@aar'
 
     implementation 'com.google.firebase:firebase-analytics:17.2.2'
+    implementation 'com.google.firebase:firebase-messaging:20.1.0'
     implementation 'com.google.firebase:firebase-database:19.2.1'
 
     implementation 'com.opentok.android:opentok-android-sdk:2.16.4'

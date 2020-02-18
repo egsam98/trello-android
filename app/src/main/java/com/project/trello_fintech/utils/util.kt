@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.text.format.DateFormat
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.database.*
 import com.project.trello_fintech.Application
 import java.util.*
 
@@ -35,4 +36,37 @@ infix fun <T> MutableLiveData<MutableList<T>>.add(elem: T) {
 infix fun <T> MutableLiveData<MutableList<T>>.remove(elem: T) {
     value?.remove(elem)
     update()
+}
+
+// TODO: test in next commit
+fun DatabaseReference.inc(onCompleteCallback: ((DataSnapshot) -> Unit)? = null) {
+    runTransaction(object : Transaction.Handler {
+        override fun doTransaction(mutableData: MutableData): Transaction.Result {
+            val value = mutableData.getValue(Int::class.java)
+            if (value == null)
+                mutableData.value = 0
+            else
+                mutableData.value = value + 1
+            return Transaction.success(mutableData)
+        }
+
+        override fun onComplete(databaseError: DatabaseError?, b: Boolean, dataSnapshot: DataSnapshot?) {
+            dataSnapshot?.let { onCompleteCallback?.invoke(it) }
+        }
+    })
+}
+
+fun DatabaseReference.dec(onCompleteCallback: ((DataSnapshot) -> Unit)? = null) {
+    runTransaction(object : Transaction.Handler {
+        override fun doTransaction(mutableData: MutableData): Transaction.Result {
+            val value = mutableData.getValue(Int::class.java)
+            if (value != null && value != 0)
+                mutableData.value = value - 1
+            return Transaction.success(mutableData)
+        }
+
+        override fun onComplete(databaseError: DatabaseError?, b: Boolean, dataSnapshot: DataSnapshot?) {
+            dataSnapshot?.let { onCompleteCallback?.invoke(it) }
+        }
+    })
 }

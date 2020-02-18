@@ -7,6 +7,9 @@ import retrofit2.http.Path
 
 interface UserApi {
 
+    @GET("members/{id}")
+    fun findUser(@Path("id") id: String): Single<User>
+
     @GET("boards/{id}/members")
     fun findAllByBoardId(@Path("id") id: String): Single<List<User>>
 

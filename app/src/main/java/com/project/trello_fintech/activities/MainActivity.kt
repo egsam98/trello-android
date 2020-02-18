@@ -11,19 +11,19 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import com.google.android.material.navigation.NavigationView
 import com.project.trello_fintech.Application
-import com.project.trello_fintech.R
 import com.project.trello_fintech.di.components.MainActivityComponent
 import com.project.trello_fintech.di.modules.MainActivityModule
 import com.project.trello_fintech.fragments.*
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.Task
-import com.project.trello_fintech.view_models.BoardsViewModel
-import com.project.trello_fintech.view_models.TasksViewModel
-import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import com.project.trello_fintech.utils.StringsRepository
+import com.project.trello_fintech.view_models.BoardsViewModel
 import com.project.trello_fintech.view_models.TaskDetailViewModel
+import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.UsersViewModel
+import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import javax.inject.Inject
+import com.project.trello_fintech.R
 
 
 class MainActivity : AppCompatActivity() {

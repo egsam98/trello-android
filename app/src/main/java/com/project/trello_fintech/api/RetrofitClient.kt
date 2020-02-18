@@ -1,6 +1,5 @@
 package com.project.trello_fintech.api
 
-import android.util.Log
 import com.project.trello_fintech.BuildConfig
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -18,21 +17,13 @@ import javax.inject.Inject
 
 /**
  * Клиент для осуществления CRUD
- * @property loggingInterceptor HttpLoggingInterceptor
  * @property retrofitBuilder Builder
- * @constructor
  */
 class RetrofitClient @Inject constructor(
     cache: Cache,
     stringsRepository: StringsRepository,
+    loggingInterceptor: HttpLoggingInterceptor,
     gsonConverterFactory: GsonConverterFactory) {
-
-    private val loggingInterceptor = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
-        Log.i("OkHttp", it)
-    }).apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
-
 
     val retrofitBuilder: Retrofit.Builder by lazy {
         val httpClient = OkHttpClient.Builder()

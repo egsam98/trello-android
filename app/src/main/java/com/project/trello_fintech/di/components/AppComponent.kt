@@ -1,6 +1,7 @@
 package com.project.trello_fintech.di.components
 
 import android.content.Context
+import com.project.trello_fintech.activities.VideoCallActivity
 import com.project.trello_fintech.di.modules.*
 import com.project.trello_fintech.view_models.BoardsViewModel
 import dagger.Component
@@ -16,4 +17,5 @@ interface AppComponent {
     fun plusMainActivityComponent(mainActivityModule: MainActivityModule): MainActivityComponent
 
     fun inject(boardsViewModel: BoardsViewModel)
+    fun inject(videoCallActivity: VideoCallActivity)
 }
