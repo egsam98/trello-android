@@ -17,6 +17,7 @@ import com.project.trello_fintech.Application
 import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.opentok.SubscribersAdapter
 import com.project.trello_fintech.models.Board
+import com.project.trello_fintech.services.AuthenticationService
 import com.project.trello_fintech.services.FirebaseService
 import javax.inject.Inject
 
@@ -48,6 +49,9 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
 
     @Inject
     lateinit var firebaseService: FirebaseService
+
+    @Inject
+    lateinit var authService: AuthenticationService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,10 +90,12 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
 
     // Connected to session
     override fun onConnected(session: Session) {
-        val publisher = Publisher.Builder(this).build().apply {
-            publishAudio = false
-            renderer.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL)
-        }
+        val publisher = Publisher.Builder(this)
+            .name(authService.user.fullname)
+            .audioTrack(false)
+            .build().apply {
+                renderer.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL)
+            }
 
         val publisherView = publisher.view
         publisherViewContainer.addView(publisherView)
@@ -110,7 +116,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
             renderer.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL)
         }
         session.subscribe(subscriber)
-        subscribersAdapter.register(subscriber)
+        subscribersAdapter.register(subscriber, stream.name)
     }
 
     override fun onStreamDropped(session: Session, stream: Stream) {

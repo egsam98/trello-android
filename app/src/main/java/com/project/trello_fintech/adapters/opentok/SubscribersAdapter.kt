@@ -3,6 +3,7 @@ package com.project.trello_fintech.adapters.opentok
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.opentok.android.Stream
 import com.opentok.android.Subscriber
@@ -10,16 +11,19 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.views.ExpandableConstraintLayout
 
 
+private class SubscriberName(val subscriber: Subscriber, val name: String)
+
 /**
  * Адаптер участников видеоконференции
- * @property subscribers MutableList<Subscriber>
+ * @property subscriberNames MutableList<Subscriber>
  */
 class SubscribersAdapter: RecyclerView.Adapter<SubscribersAdapter.ViewHolder>() {
 
-    private var subscribers = mutableListOf<Subscriber>()
+    private var subscriberNames = mutableListOf<SubscriberName>()
 
     class ViewHolder(val subscriberWrapper: ExpandableConstraintLayout): RecyclerView.ViewHolder(subscriberWrapper) {
-        val subscriberView: FrameLayout = subscriberWrapper.findViewById(R.id.subscriber_view)
+        val subscriberView: FrameLayout = subscriberWrapper.findViewById(R.id.subscriber)
+        val usernameView: TextView = subscriberWrapper.findViewById(R.id.username)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -29,29 +33,30 @@ class SubscribersAdapter: RecyclerView.Adapter<SubscribersAdapter.ViewHolder>() 
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val subscriber = subscribers[position]
+        val subscriberName = subscriberNames[position]
         with (holder) {
+            usernameView.text = subscriberName.name
             subscriberView.removeAllViews()
-            subscriberView.addView(subscriber.view)
+            subscriberView.addView(subscriberName.subscriber.view)
             subscriberView.setOnClickListener {
                 subscriberWrapper.expandOrRestore()
-                subscribers.add(0, subscriber)
-                subscribers.removeAt(position)
+                subscriberNames.add(0, subscriberName)
+                subscriberNames.removeAt(position)
                 notifyItemMoved(position, 0)
             }
         }
     }
 
-    override fun getItemCount() = subscribers.size
+    override fun getItemCount() = subscriberNames.size
 
-    fun register(subscriber: Subscriber) {
-        subscribers.add(subscriber)
+    fun register(subscriber: Subscriber, name: String) {
+        subscriberNames.add(SubscriberName(subscriber, name))
         notifyDataSetChanged()
     }
 
     fun deleteByStream(stream: Stream) {
-        val subscriber = subscribers.find { it.stream == stream }
-        subscribers.remove(subscriber)
+        val subscriber = subscriberNames.find { it.subscriber.stream == stream }
+        subscriberNames.remove(subscriber)
         notifyDataSetChanged()
     }
 }
