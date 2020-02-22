@@ -100,6 +100,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
         session.publish(publisher)
     }
 
+    // TODO: remove stream data if last user disconnected
     // Disconnected from session
     override fun onDisconnected(session: Session) {}
 
@@ -116,6 +117,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
         subscribersAdapter.deleteByStream(stream)
     }
 
+    // TODO: handle token error
     override fun onError(session: Session, opentokError: OpentokError) {
         val errMsg = "onError: " + opentokError.errorDomain + " : " +
                 opentokError.errorCode + " - " + opentokError.message + " in session: " + session.sessionId

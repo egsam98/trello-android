@@ -13,6 +13,7 @@ import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import javax.inject.Inject
 
 
+// TODO: add subtask option implement
 /**
  * Диалоговое окно создания/редактирования элемента чек-листа
  * @property cleanableViewModelProvider CleanableViewModelProvider
