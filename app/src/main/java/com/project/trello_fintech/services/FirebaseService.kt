@@ -2,10 +2,7 @@ package com.project.trello_fintech.services
 
 import android.content.Context
 import android.widget.Toast
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.project.trello_fintech.BuildConfig
 import com.project.trello_fintech.adapters.RxJava2Adapter
 import com.project.trello_fintech.api.RetrofitClient
@@ -14,6 +11,8 @@ import com.project.trello_fintech.api.UserApi
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.firebase.FirebaseMessage
 import com.project.trello_fintech.models.firebase.SessionStart
+import com.project.trello_fintech.utils.dec
+import com.project.trello_fintech.utils.inc
 import com.project.trello_fintech.utils.reactive.LiveEvent
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -25,7 +24,7 @@ import javax.inject.Singleton
 
 
 /**
- * Сервис взаимодействия с Firebase Relatime Database
+ * Сервис взаимодействия с Firebase Relatime Database (доп-о Opentok для видеоконференций)
  * @property cxt Context
  * @property authService AuthenticationService
  * @property fcmSenderService FCMSenderService
@@ -33,7 +32,7 @@ import javax.inject.Singleton
  * @property onError LiveEvent<Pair<String, Int?>>
  * @property taskApi TaskApi
  * @property userApi UserApi
- * @property opentokApi
+ * @property opentokApi (com.project.trello_fintech.services.FirebaseService.OpentokApi..com.project.trello_fintech.services.FirebaseService.OpentokApi?)
  */
 @Singleton
 class FirebaseService @Inject constructor(
@@ -80,28 +79,47 @@ class FirebaseService @Inject constructor(
     }
 
     fun videoCall(board: Board, func: (SessionStart) -> Unit) {
-        database.getReference("boards/${board.id}/stream").addValueEventListener(object : ValueEventListener {
+        database.getReference("boards/${board.id}/stream").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if (!dataSnapshot.exists()) {
+                dataSnapshot.getValue(SessionStart::class.java)?.let {
+                    dataSnapshot.incUsersCountAndRunCallback(it)
+                } ?: run {
                     opentokApi.createSession()
                         .doOnSuccess {
                             dataSnapshot.ref.setValue(it)
                             val msg = FirebaseMessage.create("TEST_TITLE", "CALLING YOU TO MEETING...")
                             fcmSenderService.send(msg)
-                            dataSnapshot.runCallback()
+                            dataSnapshot.incUsersCountAndRunCallback(it)
                         }
                         .subscribe()
                 }
-                dataSnapshot.runCallback()
             }
 
             override fun onCancelled(err: DatabaseError) {
-                Toast.makeText(cxt, err.message, Toast.LENGTH_LONG).show()
+                showError(err.message)
             }
 
-            private fun DataSnapshot.runCallback() {
-                getValue(SessionStart::class.java)?.let { func(it) }
+            private fun DataSnapshot.incUsersCountAndRunCallback(sessionStart: SessionStart) {
+                ref.child("usersCount").inc(
+                    onCompleteCallback = { func(sessionStart) },
+                    onErrorCallback = { err -> showError(err.message) }
+                )
             }
         })
+    }
+
+    fun stopVideoCall(board: Board) {
+        val streamRef = database.getReference("boards/${board.id}/stream")
+        streamRef.child("usersCount").dec (
+            onCompleteCallback = {
+                if (it == 0)
+                    streamRef.removeValue()
+            },
+            onErrorCallback = { showError(it.message) }
+        )
+    }
+
+    private fun showError(msg: String) {
+        Toast.makeText(cxt, msg, Toast.LENGTH_LONG).show()
     }
 }

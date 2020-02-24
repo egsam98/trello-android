@@ -22,7 +22,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.GanttChartActivity"/>
-        <activity android:name=".activities.VideoCallActivity"/>
+        <activity android:name=".activities.VideoCallActivity"
+                  android:screenOrientation="portrait" />
         <service android:name=".services.FCMReceiverService"
                  android:exported="false">
             <intent-filter>

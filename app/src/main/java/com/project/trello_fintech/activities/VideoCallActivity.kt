@@ -42,6 +42,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
     }
 
     private var session: Session? = null
+    private lateinit var board: Board
     private lateinit var publisherViewContainer: FrameLayout
     private lateinit var subscriberContainers: RecyclerView
     private lateinit var subscribersAdapter: SubscribersAdapter
@@ -69,7 +70,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
     }
 
     private fun initSession() {
-        val board = intent.getSerializableExtra(BOARD_ARG) as Board
+        board = intent.getSerializableExtra(BOARD_ARG) as Board
         firebaseService.videoCall(board) {
             session = Session.Builder(this, it.apiKey, it.sessionId).build().apply {
                 setSessionListener(this@VideoCallActivity)
@@ -100,7 +101,6 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
         session.publish(publisher)
     }
 
-    // TODO: remove stream data if last user disconnected
     // Disconnected from session
     override fun onDisconnected(session: Session) {}
 
@@ -117,8 +117,12 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
         subscribersAdapter.deleteByStream(stream)
     }
 
-    // TODO: handle token error
     override fun onError(session: Session, opentokError: OpentokError) {
+        if (opentokError.isTokenProblem()) {
+            firebaseService.stopVideoCall(board)
+            initSession()
+            return
+        }
         val errMsg = "onError: " + opentokError.errorDomain + " : " +
                 opentokError.errorCode + " - " + opentokError.message + " in session: " + session.sessionId
         Toast.makeText(this, errMsg, Toast.LENGTH_LONG).show()
@@ -127,5 +131,8 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
     override fun onDestroy() {
         super.onDestroy()
         session?.disconnect()
+        firebaseService.stopVideoCall(board)
     }
+
+    private fun OpentokError.isTokenProblem() = message.contains("token", ignoreCase = true)
 }

@@ -38,35 +38,38 @@ infix fun <T> MutableLiveData<MutableList<T>>.remove(elem: T) {
     update()
 }
 
-// TODO: test in next commit
-fun DatabaseReference.inc(onCompleteCallback: ((DataSnapshot) -> Unit)? = null) {
-    runTransaction(object : Transaction.Handler {
-        override fun doTransaction(mutableData: MutableData): Transaction.Result {
-            val value = mutableData.getValue(Int::class.java)
-            if (value == null)
-                mutableData.value = 0
-            else
-                mutableData.value = value + 1
-            return Transaction.success(mutableData)
+fun DatabaseReference.inc(onCompleteCallback: ((Int) -> Unit)? = null,
+                          onErrorCallback: ((DatabaseError) -> Unit)? = null) {
+    runTransaction(object: Transaction.Handler {
+        override fun doTransaction(data: MutableData): Transaction.Result {
+            val value = data.getValue(Int::class.java)
+            data.value = (value?: 0) + 1
+            return Transaction.success(data)
         }
 
-        override fun onComplete(databaseError: DatabaseError?, b: Boolean, dataSnapshot: DataSnapshot?) {
-            dataSnapshot?.let { onCompleteCallback?.invoke(it) }
+        override fun onComplete(err: DatabaseError?, p1: Boolean, dataSnapshot: DataSnapshot?) {
+            when {
+                dataSnapshot != null && onCompleteCallback != null -> onCompleteCallback(dataSnapshot.getValue(Int::class.java)!!)
+                err != null && onErrorCallback != null -> onErrorCallback(err)
+            }
         }
     })
 }
 
-fun DatabaseReference.dec(onCompleteCallback: ((DataSnapshot) -> Unit)? = null) {
-    runTransaction(object : Transaction.Handler {
-        override fun doTransaction(mutableData: MutableData): Transaction.Result {
-            val value = mutableData.getValue(Int::class.java)
-            if (value != null && value != 0)
-                mutableData.value = value - 1
-            return Transaction.success(mutableData)
+fun DatabaseReference.dec(onCompleteCallback: ((Int) -> Unit)? = null,
+                          onErrorCallback: ((DatabaseError) -> Unit)? = null) {
+    runTransaction(object: Transaction.Handler {
+        override fun doTransaction(data: MutableData): Transaction.Result {
+            val value = data.getValue(Int::class.java)
+            data.value = if (value != null && value > 0) value - 1 else 0
+            return Transaction.success(data)
         }
 
-        override fun onComplete(databaseError: DatabaseError?, b: Boolean, dataSnapshot: DataSnapshot?) {
-            dataSnapshot?.let { onCompleteCallback?.invoke(it) }
+        override fun onComplete(err: DatabaseError?, p1: Boolean, dataSnapshot: DataSnapshot?) {
+            when {
+                err != null && onErrorCallback != null -> onErrorCallback(err)
+                dataSnapshot != null && onCompleteCallback != null -> onCompleteCallback(dataSnapshot.getValue(Int::class.java)!!)
+            }
         }
     })
 }
