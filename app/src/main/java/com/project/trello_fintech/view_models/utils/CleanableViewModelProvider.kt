@@ -1,25 +1,22 @@
 package com.project.trello_fintech.view_models.utils
 
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProviders
+import com.project.trello_fintech.activities.MainActivity
+import com.project.trello_fintech.di.scopes.MainActivityScope
 import com.project.trello_fintech.view_models.CleanableViewModel
-import java.lang.IllegalArgumentException
+import javax.inject.Inject
 
 
 /**
  * ViewModelProviders для классов, наслед. CleanableViewModel
- * @property owner LifecycleOwner
+ * @property mainActivity MainActivity
  * @property viewModelFactory ViewModelFactory
  */
-class CleanableViewModelProvider(val owner: LifecycleOwner, val viewModelFactory: ViewModelFactory) {
+@MainActivityScope
+class CleanableViewModelProvider @Inject constructor(val mainActivity: MainActivity, val viewModelFactory: ViewModelFactory) {
     inline fun <reified T: CleanableViewModel> get(disposableOwner: LifecycleOwner): T {
-        val viewModelProvider = when (owner) {
-            is Fragment -> ViewModelProviders.of(owner, viewModelFactory)
-            is FragmentActivity -> ViewModelProviders.of(owner, viewModelFactory)
-            else -> throw IllegalArgumentException("owner must be Fragment or FragmentActivity")
-        }
+        val viewModelProvider = ViewModelProviders.of(mainActivity, viewModelFactory)
         return viewModelProvider.get(T::class.java).apply {
             disposableOwner.lifecycle.addObserver(this)
         }

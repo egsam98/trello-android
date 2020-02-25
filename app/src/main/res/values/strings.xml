@@ -22,4 +22,6 @@
     <string name="add_checklist">Добавить чек-лист</string>
     <string name="checkitem">Элемент чек-листа</string>
     <string name="start_or_continue_videocall">Начать/продолжить видеозвонок</string>
+    <string name="accept">Принять</string>
+    <string name="decline">Отклонить</string>
 </resources>

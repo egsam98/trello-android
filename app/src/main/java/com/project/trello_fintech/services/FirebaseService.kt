@@ -5,12 +5,14 @@ import android.widget.Toast
 import com.google.firebase.database.*
 import com.project.trello_fintech.BuildConfig
 import com.project.trello_fintech.adapters.RxJava2Adapter
+import com.project.trello_fintech.api.BoardApi
 import com.project.trello_fintech.api.RetrofitClient
 import com.project.trello_fintech.api.TaskApi
 import com.project.trello_fintech.api.UserApi
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.firebase.FirebaseMessage
 import com.project.trello_fintech.models.firebase.SessionStart
+import com.project.trello_fintech.services.utils.NotificationType
 import com.project.trello_fintech.utils.dec
 import com.project.trello_fintech.utils.inc
 import com.project.trello_fintech.utils.reactive.LiveEvent
@@ -32,6 +34,7 @@ import javax.inject.Singleton
  * @property onError LiveEvent<Pair<String, Int?>>
  * @property taskApi TaskApi
  * @property userApi UserApi
+ * @property boardApi BoardApi
  * @property opentokApi (com.project.trello_fintech.services.FirebaseService.OpentokApi..com.project.trello_fintech.services.FirebaseService.OpentokApi?)
  */
 @Singleton
@@ -51,6 +54,7 @@ class FirebaseService @Inject constructor(
     }
     private val taskApi by lazy { retrofitClient.create<TaskApi>(onError) }
     private val userApi by lazy { retrofitClient.create<UserApi>(onError) }
+    private val boardApi by lazy { retrofitClient.create<BoardApi>(onError) }
 
     private interface OpentokApi {
         @GET("createSession")
@@ -87,8 +91,7 @@ class FirebaseService @Inject constructor(
                     opentokApi.createSession()
                         .doOnSuccess {
                             dataSnapshot.ref.setValue(it)
-                            val msg = FirebaseMessage.create("TEST_TITLE", "CALLING YOU TO MEETING...")
-                            fcmSenderService.send(msg)
+                            sendInvitation(board)
                             dataSnapshot.incUsersCountAndRunCallback(it)
                         }
                         .subscribe()
@@ -108,6 +111,12 @@ class FirebaseService @Inject constructor(
         })
     }
 
+    fun videoCall(boardId: String, func: (SessionStart) -> Unit) {
+        boardApi.findById(boardId)
+            .doOnSuccess { videoCall(it, func) }
+            .subscribe()
+    }
+
     fun stopVideoCall(board: Board) {
         val streamRef = database.getReference("boards/${board.id}/stream")
         streamRef.child("usersCount").dec (
@@ -117,6 +126,14 @@ class FirebaseService @Inject constructor(
             },
             onErrorCallback = { showError(it.message) }
         )
+    }
+
+    private fun sendInvitation(board: Board) {
+        val currentUser = authService.user
+        val msg = FirebaseMessage.create(currentUser.id, "Видеоконференция", board.id,
+            "${currentUser.fullname} приглашает Вас на видеоконференцию!",
+            NotificationType.ACCEPTDECLINE)
+        fcmSenderService.send(msg)
     }
 
     private fun showError(msg: String) {

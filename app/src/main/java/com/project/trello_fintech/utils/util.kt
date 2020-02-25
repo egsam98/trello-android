@@ -1,6 +1,9 @@
 package com.project.trello_fintech.utils
 
 import android.content.Context
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.text.format.DateFormat
 import androidx.lifecycle.MutableLiveData
@@ -73,3 +76,5 @@ fun DatabaseReference.dec(onCompleteCallback: ((Int) -> Unit)? = null,
         }
     })
 }
+
+fun Resources.getBitmap(id: Int): Bitmap = BitmapFactory.decodeResource(this, id)

@@ -4,20 +4,25 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.project.trello_fintech.api.RetrofitClient
+import com.project.trello_fintech.di.scopes.MainActivityScope
 import com.project.trello_fintech.view_models.BoardsViewModel
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.TasksViewModel
 import com.project.trello_fintech.view_models.UsersViewModel
+import javax.inject.Inject
 
 
 /**
  * Фабрика создания ViewModel'ей
  * @property cxt Context
  * @property retrofitClient RetrofitClient
- * @constructor
  */
+@MainActivityScope
 @Suppress("UNCHECKED_CAST")
-class ViewModelFactory(private val cxt: Context, private val retrofitClient: RetrofitClient): ViewModelProvider.Factory {
+class ViewModelFactory @Inject constructor(
+    private val cxt: Context,
+    private val retrofitClient: RetrofitClient): ViewModelProvider.Factory {
+
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(BoardsViewModel::class.java) -> BoardsViewModel(retrofitClient)

@@ -31,7 +31,6 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.GanttChartActivity
 import com.project.trello_fintech.activities.VideoCallActivity
 import com.project.trello_fintech.listeners.OnTaskSearchListener
-import com.project.trello_fintech.services.FirebaseService
 import com.project.trello_fintech.views.ClearableSearchView
 
 
@@ -57,9 +56,6 @@ class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener
 
     @Inject
     lateinit var cleanableViewModelProvider: CleanableViewModelProvider
-
-    @Inject
-    lateinit var firebaseService: FirebaseService
 
     private lateinit var tasksViewModel: TasksViewModel
     private lateinit var selectedBoard: Board

@@ -17,38 +17,54 @@ import com.project.trello_fintech.Application
 import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.opentok.SubscribersAdapter
 import com.project.trello_fintech.models.Board
+import com.project.trello_fintech.models.firebase.SessionStart
 import com.project.trello_fintech.services.FirebaseService
+import com.project.trello_fintech.services.NotificationService
+import java.lang.ClassCastException
+import java.lang.Exception
+import java.lang.NullPointerException
 import javax.inject.Inject
 
 
 /**
  * Активити экрана видеозвонка участников проекта (одной доски)
- * @property session Session
+ * @property session Session?
+ * @property board Board?
  * @property publisherViewContainer FrameLayout
  * @property subscriberContainers RecyclerView
  * @property subscribersAdapter SubscribersAdapter
  * @property firebaseService FirebaseService
+ * @property notificationService NotificationService
  */
 class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
     companion object {
         private const val ACCESS_VIDEOCALL_REQUEST_CODE = 0
-        private const val BOARD_ARG = "board_id"
+        private const val BOARD_ARG = "board"
+        private const val BOARD_ID_ARG = "board_id"
         fun start(cxt: Context, board: Board) {
             val intent = Intent(cxt, VideoCallActivity::class.java).apply {
                 putExtra(BOARD_ARG, board)
             }
             cxt.startActivity(intent)
         }
+
+        fun createNotificationIntent(cxt: Context, boardId: String, notificationId: Int) =
+            NotificationService.createIntent(cxt, VideoCallActivity::class, notificationId).apply {
+                putExtra(BOARD_ID_ARG, boardId)
+            }
     }
 
     private var session: Session? = null
-    private lateinit var board: Board
+    private var board: Board? = null
     private lateinit var publisherViewContainer: FrameLayout
     private lateinit var subscriberContainers: RecyclerView
     private lateinit var subscribersAdapter: SubscribersAdapter
 
     @Inject
     lateinit var firebaseService: FirebaseService
+
+    @Inject
+    lateinit var notificationService: NotificationService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,11 +86,22 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
     }
 
     private fun initSession() {
-        board = intent.getSerializableExtra(BOARD_ARG) as Board
-        firebaseService.videoCall(board) {
+        val callback: (SessionStart) -> Unit = {
             session = Session.Builder(this, it.apiKey, it.sessionId).build().apply {
                 setSessionListener(this@VideoCallActivity)
                 connect(it.token)
+            }
+        }
+
+        try{
+            board = intent.getSerializableExtra(BOARD_ARG) as Board
+            firebaseService.videoCall(board!!) { callback(it) }
+        } catch (e: Exception) {
+            if (e is NullPointerException || e is ClassCastException) {
+                intent.getStringExtra(BOARD_ID_ARG)?.let { boardId ->
+                    notificationService.cancelAll()
+                    firebaseService.videoCall(boardId) { callback(it) }
+                }
             }
         }
     }
@@ -119,7 +146,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
 
     override fun onError(session: Session, opentokError: OpentokError) {
         if (opentokError.isTokenProblem()) {
-            firebaseService.stopVideoCall(board)
+            board?.let(firebaseService::stopVideoCall)
             initSession()
             return
         }
@@ -131,7 +158,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
     override fun onDestroy() {
         super.onDestroy()
         session?.disconnect()
-        firebaseService.stopVideoCall(board)
+        board?.let(firebaseService::stopVideoCall)
     }
 
     private fun OpentokError.isTokenProblem() = message.contains("token", ignoreCase = true)

@@ -9,6 +9,9 @@ interface BoardApi {
     @GET("members/me/boards?organization=true&organization_fields=displayName")
     fun findAll(): Single<List<Board>>
 
+    @GET("boards/{id}")
+    fun findById(@Path("id") id: String): Single<Board>
+
     @POST("boards/?defaultLists=true")
     fun create(@Body board: Board,
                @Query("idOrganization") id: String,
