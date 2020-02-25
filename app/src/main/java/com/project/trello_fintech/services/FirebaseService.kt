@@ -128,6 +128,10 @@ class FirebaseService @Inject constructor(
         )
     }
 
+    fun removeVideoCall(board: Board) {
+        database.getReference("boards/${board.id}/stream").removeValue()
+    }
+
     private fun sendInvitation(board: Board) {
         val currentUser = authService.user
         val msg = FirebaseMessage.create(currentUser.id, "Видеоконференция", board.id,

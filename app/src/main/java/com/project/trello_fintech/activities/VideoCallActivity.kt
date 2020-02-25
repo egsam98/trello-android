@@ -153,7 +153,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
 
     override fun onError(session: Session, opentokError: OpentokError) {
         if (opentokError.isTokenProblem()) {
-            board?.let(firebaseService::stopVideoCall)
+            board?.let(firebaseService::removeVideoCall)
             initSession()
             return
         }
