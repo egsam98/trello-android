@@ -3,6 +3,7 @@ package com.project.trello_fintech.adapters.opentok
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.opentok.android.Stream
 import com.opentok.android.Subscriber
@@ -19,7 +20,8 @@ class SubscribersAdapter: RecyclerView.Adapter<SubscribersAdapter.ViewHolder>() 
     private var subscribers = mutableListOf<Subscriber>()
 
     class ViewHolder(val subscriberWrapper: ExpandableConstraintLayout): RecyclerView.ViewHolder(subscriberWrapper) {
-        val subscriberView: FrameLayout = subscriberWrapper.findViewById(R.id.subscriber_view)
+        val subscriberView: FrameLayout = subscriberWrapper.findViewById(R.id.subscriber)
+        val usernameView: TextView = subscriberWrapper.findViewById(R.id.username)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -31,6 +33,7 @@ class SubscribersAdapter: RecyclerView.Adapter<SubscribersAdapter.ViewHolder>() 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val subscriber = subscribers[position]
         with (holder) {
+            usernameView.text = subscriber.stream.name
             subscriberView.removeAllViews()
             subscriberView.addView(subscriber.view)
             subscriberView.setOnClickListener {

@@ -18,6 +18,7 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.adapters.opentok.SubscribersAdapter
 import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.firebase.SessionStart
+import com.project.trello_fintech.services.AuthenticationService
 import com.project.trello_fintech.services.FirebaseService
 import com.project.trello_fintech.services.NotificationService
 import java.lang.ClassCastException
@@ -66,6 +67,9 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
     @Inject
     lateinit var notificationService: NotificationService
 
+    @Inject
+    lateinit var authService: AuthenticationService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_videocall)
@@ -112,12 +116,15 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
             initSession()
     }
 
+    // TODO: toggle on mic
     // Connected to session
     override fun onConnected(session: Session) {
-        val publisher = Publisher.Builder(this).build().apply {
-            publishAudio = false
-            renderer.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL)
-        }
+        val publisher = Publisher.Builder(this)
+            .name(authService.user.fullname)
+            .audioTrack(false)
+            .build().apply {
+                renderer.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL)
+            }
 
         val publisherView = publisher.view
         publisherViewContainer.addView(publisherView)
