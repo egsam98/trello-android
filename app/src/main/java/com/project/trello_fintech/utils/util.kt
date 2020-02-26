@@ -6,9 +6,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.text.format.DateFormat
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.database.*
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
 import com.project.trello_fintech.Application
+import java.lang.Exception
 import java.util.*
 
 
@@ -41,40 +45,30 @@ infix fun <T> MutableLiveData<MutableList<T>>.remove(elem: T) {
     update()
 }
 
-fun DatabaseReference.inc(onCompleteCallback: ((Int) -> Unit)? = null,
-                          onErrorCallback: ((DatabaseError) -> Unit)? = null) {
-    runTransaction(object: Transaction.Handler {
-        override fun doTransaction(data: MutableData): Transaction.Result {
-            val value = data.getValue(Int::class.java)
-            data.value = (value?: 0) + 1
-            return Transaction.success(data)
-        }
-
-        override fun onComplete(err: DatabaseError?, p1: Boolean, dataSnapshot: DataSnapshot?) {
-            when {
-                dataSnapshot != null && onCompleteCallback != null -> onCompleteCallback(dataSnapshot.getValue(Int::class.java)!!)
-                err != null && onErrorCallback != null -> onErrorCallback(err)
-            }
-        }
-    })
+fun DocumentReference.setField(key: String, value: Any, merge: Boolean = true) {
+    if (merge)
+        set(mapOf(key to value), SetOptions.merge()).addOnFailureListener { it.show() }
+    else
+        set(mapOf(key to value)).addOnFailureListener { it.show() }
 }
 
-fun DatabaseReference.dec(onCompleteCallback: ((Int) -> Unit)? = null,
-                          onErrorCallback: ((DatabaseError) -> Unit)? = null) {
-    runTransaction(object: Transaction.Handler {
-        override fun doTransaction(data: MutableData): Transaction.Result {
-            val value = data.getValue(Int::class.java)
-            data.value = if (value != null && value > 0) value - 1 else 0
-            return Transaction.success(data)
-        }
+fun DocumentReference.incFields(vararg fieldName: String, value: Long = 1) {
+    val updates = fieldName.associate { Pair(it, FieldValue.increment(value)) }
+    update(updates).addOnFailureListener { it.show() }
+}
 
-        override fun onComplete(err: DatabaseError?, p1: Boolean, dataSnapshot: DataSnapshot?) {
-            when {
-                err != null && onErrorCallback != null -> onErrorCallback(err)
-                dataSnapshot != null && onCompleteCallback != null -> onCompleteCallback(dataSnapshot.getValue(Int::class.java)!!)
-            }
-        }
-    })
+fun DocumentReference.decFields(vararg fieldName: String, value: Long = 1) {
+    val updates = fieldName.associate { Pair(it, FieldValue.increment(-value)) }
+    update(updates).addOnFailureListener { it.show() }
+}
+
+fun DocumentReference.deleteFields(vararg fieldName: String) {
+    val updates = fieldName.associate { Pair(it, FieldValue.delete()) }
+    update(updates).addOnFailureListener { it.show() }
+}
+
+fun Exception.show() {
+    Toast.makeText(Application.component.context, message?: localizedMessage, Toast.LENGTH_LONG).show()
 }
 
 fun Resources.getBitmap(id: Int): Bitmap = BitmapFactory.decodeResource(this, id)

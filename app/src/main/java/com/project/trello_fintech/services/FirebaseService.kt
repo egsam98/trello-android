@@ -2,7 +2,7 @@ package com.project.trello_fintech.services
 
 import android.content.Context
 import android.widget.Toast
-import com.google.firebase.database.*
+import com.google.firebase.firestore.*
 import com.project.trello_fintech.BuildConfig
 import com.project.trello_fintech.adapters.RxJava2Adapter
 import com.project.trello_fintech.api.BoardApi
@@ -13,8 +13,7 @@ import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.firebase.FirebaseMessage
 import com.project.trello_fintech.models.firebase.SessionStart
 import com.project.trello_fintech.services.utils.NotificationType
-import com.project.trello_fintech.utils.dec
-import com.project.trello_fintech.utils.inc
+import com.project.trello_fintech.utils.*
 import com.project.trello_fintech.utils.reactive.LiveEvent
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -30,7 +29,8 @@ import javax.inject.Singleton
  * @property cxt Context
  * @property authService AuthenticationService
  * @property fcmSenderService FCMSenderService
- * @property database FirebaseDatabase
+ * @property db FirebaseFirestore
+ * @property boardsCollection CollectionReference
  * @property onError LiveEvent<Pair<String, Int?>>
  * @property taskApi TaskApi
  * @property userApi UserApi
@@ -46,7 +46,8 @@ class FirebaseService @Inject constructor(
         retrofitClient: RetrofitClient
     ) {
 
-    private val database = FirebaseDatabase.getInstance()
+    private val db = FirebaseFirestore.getInstance()
+    private val boardsCollection = db.collection("boards")
     private val onError = LiveEvent<Pair<String, Int?>>().apply {
         observeForever { (text) ->
             Toast.makeText(cxt, text, Toast.LENGTH_LONG).show()
@@ -71,44 +72,28 @@ class FirebaseService @Inject constructor(
     }
 
     fun registerBoards(boards: List<Board>) {
-        val boardsRef = database.getReference("boards")
         boards.forEach {
-            taskApi.findAllByBoardId(it.id).subscribe { tasks ->
-                val boardRef = boardsRef.child(it.id)
-                boardRef.child("title").setValue(it.title)
-                val tasksData = tasks.associateBy({ task -> task.id }, {""})
-                boardRef.child("tasks").updateChildren(tasksData)
-            }
+            boardsCollection.document(it.id).setField("title", it.title)
         }
     }
 
     fun videoCall(board: Board, func: (SessionStart) -> Unit) {
-        database.getReference("boards/${board.id}/stream").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                dataSnapshot.getValue(SessionStart::class.java)?.let {
-                    dataSnapshot.incUsersCountAndRunCallback(it)
-                } ?: run {
-                    opentokApi.createSession()
-                        .doOnSuccess {
-                            dataSnapshot.ref.setValue(it)
-                            sendInvitation(board)
-                            dataSnapshot.incUsersCountAndRunCallback(it)
-                        }
-                        .subscribe()
+        getSession(board) { sessionStart, document ->
+            sessionStart?.let {
+                document.reference.incFields("usersCount")
+                func(it)
+            }?: run {
+                opentokApi.createSession().doOnSuccess {
+                    document.reference.set(mapOf(
+                        "usersCount" to 1,
+                        "session" to it
+                    ), SetOptions.merge()).addOnFailureListener { e -> e.show() }
+                    sendInvitation(board)
+                    func(it)
                 }
+                .subscribe()
             }
-
-            override fun onCancelled(err: DatabaseError) {
-                showError(err.message)
-            }
-
-            private fun DataSnapshot.incUsersCountAndRunCallback(sessionStart: SessionStart) {
-                ref.child("usersCount").inc(
-                    onCompleteCallback = { func(sessionStart) },
-                    onErrorCallback = { err -> showError(err.message) }
-                )
-            }
-        })
+        }
     }
 
     fun videoCall(boardId: String, func: (SessionStart) -> Unit) {
@@ -118,18 +103,31 @@ class FirebaseService @Inject constructor(
     }
 
     fun stopVideoCall(board: Board) {
-        val streamRef = database.getReference("boards/${board.id}/stream")
-        streamRef.child("usersCount").dec (
-            onCompleteCallback = {
-                if (it == 0)
-                    streamRef.removeValue()
-            },
-            onErrorCallback = { showError(it.message) }
-        )
+        getSession(board) {_, document ->
+            document.getLong("usersCount")
+                ?.let {
+                    if (it <= 1)
+                        document.reference.deleteFields("session", "usersCount")
+                    else
+                        document.reference.decFields("usersCount")
+                }?:
+                    document.reference.deleteFields("session")
+        }
     }
 
     fun removeVideoCall(board: Board) {
-        database.getReference("boards/${board.id}/stream").removeValue()
+        getSession(board) { _, document -> document.reference.deleteFields("session") }
+    }
+
+    private fun getSession(board: Board,
+                           callback: (SessionStart?, document: DocumentSnapshot) -> Unit) {
+        val boardRef = boardsCollection.document(board.id)
+        boardRef.get()
+            .addOnSuccessListener { document ->
+                val sessionStart = document.get("session", SessionStart::class.java)
+                callback(sessionStart, document)
+            }
+            .addOnFailureListener { it.show() }
     }
 
     private fun sendInvitation(board: Board) {
@@ -138,9 +136,5 @@ class FirebaseService @Inject constructor(
             "${currentUser.fullname} приглашает Вас на видеоконференцию!",
             NotificationType.ACCEPTDECLINE)
         fcmSenderService.send(msg)
-    }
-
-    private fun showError(msg: String) {
-        Toast.makeText(cxt, msg, Toast.LENGTH_LONG).show()
     }
 }

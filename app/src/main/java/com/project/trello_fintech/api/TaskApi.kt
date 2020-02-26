@@ -10,9 +10,6 @@ interface TaskApi {
     @GET("cards/{id}")
     fun findById(@Path("id") id: String): Single<Task>
 
-    @GET("boards/{id}/cards")
-    fun findAllByBoardId(@Path("id") id: String): Single<List<Task>>
-
     @GET("list/{id}/cards")
     fun findAllByColumnId(@Path("id") id: String): Single<List<Task>>
 
