@@ -47,7 +47,7 @@ class FirebaseService @Inject constructor(
     ) {
 
     private val db = FirebaseFirestore.getInstance()
-    private val boardsCollection = db.collection("boards")
+    val boardsCollection = db.collection("boards")
     private val onError = LiveEvent<Pair<String, Int?>>().apply {
         observeForever { (text) ->
             Toast.makeText(cxt, text, Toast.LENGTH_LONG).show()
@@ -73,7 +73,13 @@ class FirebaseService @Inject constructor(
 
     fun registerBoards(boards: List<Board>) {
         boards.forEach {
-            boardsCollection.document(it.id).setField("title", it.title)
+            val boardRef = boardsCollection.document(it.id)
+            val tasksRef = boardRef.collection("tasks")
+            taskApi.findAllByBoardId(it.id).doOnSuccess { tasks ->
+                    tasks.forEach { task -> tasksRef.document(task.id).setField("text", task.text) }
+                }
+                .subscribe()
+            boardRef.setField("title", it.title)
         }
     }
 

@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.textfield.TextInputEditText
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
@@ -26,6 +25,7 @@ import com.project.trello_fintech.adapters.ChecklistsAdapter
 import com.project.trello_fintech.adapters.ParticipantsAdapter
 import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.Task
+import com.project.trello_fintech.utils.getVCSLogo
 import com.project.trello_fintech.utils.toDefaultFormat
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
@@ -45,6 +45,13 @@ fun TextView.setDate(date: Date?) {
         R.id.task_date_start -> "Начало: ${date.toDefaultFormat()}"
         R.id.task_date_deadline -> "Дедлайн: ${date.toDefaultFormat()}"
         else -> throw IllegalStateException("Неизвестный TextView ID")
+    }
+}
+
+@BindingAdapter("app:vcsUrl")
+fun ImageView.setVCSLogo(vcsUrl: String?) {
+    vcsUrl?.let {
+        setImageDrawable(resources.getVCSLogo(it))
     }
 }
 
@@ -100,12 +107,8 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
         MainActivity.component.inject(this)
         val args = requireArguments()
         args.getSerializable(TASK_ARG)
-            ?.let {
-                taskDetailViewModel.attachTask(it as Task)
-            }
-            ?:run {
-                args.getString(TASK_ID_ARG)?.let { taskDetailViewModel.attachTask(it) }
-            }
+            ?.let { taskDetailViewModel.attachTask(it as Task) }
+            ?: run { args.getString(TASK_ID_ARG)?.let { taskDetailViewModel.attachTask(it) } }
 
         binding?.setVariable(BR.viewModel, taskDetailViewModel)
 
@@ -131,25 +134,11 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
         }
 
         taskDetailViewModel.actions[0]?.observe(this, Observer {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                type = "*/*"
-            }
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply { type = "*/*" }
             startActivityForResult(intent, UPLOAD_ATTACHMENT_REQUEST)
         })
         taskDetailViewModel.observeAttachments {
             attachmentsAdapter?.data = it
-        }
-
-        view.findViewById<TextInputEditText>(R.id.description).apply {
-            val originalDrawable = background
-            background = null
-            setOnFocusChangeListener { _, isFocused ->
-                val drawable = when (isFocused) {
-                    true -> originalDrawable
-                    false -> null
-                }
-                background = drawable
-            }
         }
 
         view.findViewById<Button>(R.id.task_history).apply {
@@ -159,10 +148,7 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
         }
 
         val checklistsAdapter = ChecklistsAdapter(this)
-        view.findViewById<RecyclerView>(R.id.checklists).apply {
-            layoutManager = LinearLayoutManager(cxt)
-            adapter = checklistsAdapter
-        }
+        view.findViewById<RecyclerView>(R.id.checklists).apply { adapter = checklistsAdapter }
 
         val participantsAdapter = ParticipantsAdapter(this)
         view.findViewById<RecyclerView>(R.id.participants).apply {
@@ -182,7 +168,7 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
 
     override fun onPause() {
         super.onPause()
-        taskDetailViewModel.updateDescription()
+        taskDetailViewModel.updateInputs()
     }
 
     override fun onDestroyView() {

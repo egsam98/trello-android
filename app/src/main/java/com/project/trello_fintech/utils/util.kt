@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.text.format.DateFormat
 import android.widget.Toast
@@ -12,7 +13,10 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.project.trello_fintech.Application
+import com.project.trello_fintech.R
 import java.lang.Exception
+import java.net.MalformedURLException
+import java.net.URL
 import java.util.*
 
 
@@ -72,3 +76,25 @@ fun Exception.show() {
 }
 
 fun Resources.getBitmap(id: Int): Bitmap = BitmapFactory.decodeResource(this, id)
+
+fun Resources.getVCSLogo(url: URL): Drawable? {
+    val urlHost = url.host
+    val id = when {
+        "github" in urlHost -> R.drawable.github_logo_icon
+        "bitbucket" in urlHost -> R.drawable.bitbucket_logo_icon
+        "mercurial" in urlHost -> R.drawable.mercurial_logo_icon
+        "gitlab" in urlHost -> R.drawable.gitlab_logo_icon
+        "microsoft" in urlHost -> R.drawable.azure_logo_icon
+        else -> null
+    }
+    return id?.let { getDrawable(it, null) }
+}
+
+fun Resources.getVCSLogo(urlPath: String): Drawable? {
+    var urlFullPath = urlPath
+    if (!urlPath.contains("http")) {
+        urlFullPath = "http://$urlPath"
+    }
+    return try { getVCSLogo(URL(urlFullPath)) }
+        catch (e: MalformedURLException) { null }
+}

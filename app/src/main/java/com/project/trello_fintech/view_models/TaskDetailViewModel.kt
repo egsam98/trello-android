@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.firestore.DocumentReference
 import com.project.trello_fintech.activities.MainActivity
 import java.io.IOException
 import java.io.InputStream
@@ -24,30 +25,47 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.api.*
 import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.User
-import com.project.trello_fintech.utils.add
-import com.project.trello_fintech.utils.remove
-import com.project.trello_fintech.utils.update
+import com.project.trello_fintech.services.FirebaseService
+import com.project.trello_fintech.utils.*
 import io.reactivex.Observable
 import io.reactivex.functions.Function3
 
 
 /**
+ * Доп. данные, получаемые из Firebase Firestore (не поддерживаются Trello API)
+ * @property vcsUrl MutableLiveData<String>
+ */
+class FirebaseData {
+    val vcsUrl = MutableLiveData<String>()
+}
+
+/**
  * ViewModel для манипуляций над выбранной задачей
  * @property cxt Context
  * @property retrofitClient RetrofitClient
- * @property task Task
+ * @property firebaseService FirebaseService
+ * @property task MutableLiveData<Task>
  * @property attachments LiveList<Attachment>
  * @property attachmentRetrofit TaskAttachmentApi
  * @property taskRetrofit TaskApi
  * @property historyRetrofit TaskHistoryApi
+ * @property userRetrofit UserApi
+ * @property checklistRetrofit ChecklistApi
  * @property onError LiveEvent<Pair<String, Int?>>
  * @property onAttachmentClick LiveEvent<Attachment>
  * @property onOpenHistory LiveEvent<Unit>
  * @property actionsTitle Array<String>
  * @property actions Array<LiveEvent<Unit>?>
  * @property historyList MutableLiveData<List<History>>
+ * @property isLoading MutableLiveData<Boolean>
+ * @property participants MutableLiveData<List<User>>
+ * @property checklists MutableLiveData<MutableList<Checklist>>
+ * @property firebaseData FirebaseData
  */
-class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: RetrofitClient): CleanableViewModel() {
+class TaskDetailViewModel(
+    private val cxt: Context,
+    private val retrofitClient: RetrofitClient,
+    private val firebaseService: FirebaseService): CleanableViewModel() {
 
     var task = MutableLiveData<Task>(Task())
     private val attachments = LiveList<Task.Attachment>()
@@ -69,6 +87,14 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
     val participants = MutableLiveData<List<User>>()
     val checklists = MutableLiveData<MutableList<Checklist>>()
 
+    val firebaseData = FirebaseData()
+
+    private fun loadFromFirebase(task: Task) {
+        getTaskDocumentReference(task).get().addOnSuccessListener { document ->
+            document.getString("vcsUrl")?.let { firebaseData.vcsUrl.value = it }
+        }
+    }
+
     fun attachTask(task: Task) {
         val s1 = attachmentRetrofit.findAllByTaskId(task.id).toObservable()
         val s2 = userRetrofit.findAllByTaskId(task.id).toObservable()
@@ -82,6 +108,7 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
             .doOnSubscribe { isLoading.value = true }
             .doOnComplete { isLoading.value = false }
             .subscribe { this.task.value = task }
+        loadFromFirebase(task)
         clearOnDestroy(disposable)
     }
 
@@ -170,8 +197,14 @@ class TaskDetailViewModel(private val cxt: Context, private val retrofitClient: 
         attachments remove attachment
     }
 
-    fun updateDescription() {
-        taskRetrofit.updateDescription(task.value!!.id, task.value!!.description).subscribe()
+    fun updateInputs() {
+        val task = task.value!!
+        taskRetrofit.updateDescription(task.id, task.description).subscribe()
+        getTaskDocumentReference().setField("vcsUrl", firebaseData.vcsUrl.value.orEmpty())
+    }
+
+    private fun getTaskDocumentReference(t: Task = task.value!!): DocumentReference {
+        return firebaseService.boardsCollection.document("${t.boardId}/tasks/${t.id}")
     }
 
     fun showHistory() {
