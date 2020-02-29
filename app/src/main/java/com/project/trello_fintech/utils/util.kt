@@ -8,6 +8,8 @@ import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.text.format.DateFormat
 import android.widget.Toast
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FieldValue
@@ -98,3 +100,6 @@ fun Resources.getVCSLogo(urlPath: String): Drawable? {
     return try { getVCSLogo(URL(urlFullPath)) }
         catch (e: MalformedURLException) { null }
 }
+
+fun <T> LiveData<T>.observe(owner: LifecycleOwner, func: (T) -> Unit) =
+    observe(owner, androidx.lifecycle.Observer(func))

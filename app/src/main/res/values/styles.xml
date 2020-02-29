@@ -11,4 +11,8 @@
     <style name="ToolbarWhiteIcon" parent="AppTheme">
         <item name="android:textColorSecondary">@color/colorWhite</item>
     </style>
+    
+    <style name="TelegramLike" parent="AppTheme">
+        <item name="android:windowBackground">@color/colorBlueDark</item>
+    </style>
 </resources>

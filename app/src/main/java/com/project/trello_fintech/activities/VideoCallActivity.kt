@@ -6,9 +6,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.opengl.GLSurfaceView
 import android.os.Bundle
+import android.view.*
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -21,6 +24,8 @@ import com.project.trello_fintech.models.firebase.SessionStart
 import com.project.trello_fintech.services.AuthenticationService
 import com.project.trello_fintech.services.FirebaseService
 import com.project.trello_fintech.services.NotificationService
+import com.project.trello_fintech.utils.observe
+import com.project.trello_fintech.view_models.VideoCallViewModel
 import java.lang.ClassCastException
 import java.lang.Exception
 import java.lang.NullPointerException
@@ -56,7 +61,10 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
     }
 
     private var session: Session? = null
+    private var publisher: Publisher? = null
     private var board: Board? = null
+    private val videoCallViewModel by lazy { ViewModelProviders.of(this).get(VideoCallViewModel::class.java) }
+
     private lateinit var publisherViewContainer: FrameLayout
     private lateinit var subscriberContainers: RecyclerView
     private lateinit var subscribersAdapter: SubscribersAdapter
@@ -82,11 +90,18 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
             adapter = subscribersAdapter
         }
 
-        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)
             initSession()
         else
-            requestPermissions(arrayOf(Manifest.permission.CAMERA, Manifest.permission.MODIFY_AUDIO_SETTINGS),
-                ACCESS_VIDEOCALL_REQUEST_CODE)
+            requestPermissions(
+                arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.MODIFY_AUDIO_SETTINGS),
+                ACCESS_VIDEOCALL_REQUEST_CODE
+            )
+
+        findViewById<ImageView>(R.id.stop_videocall).apply {
+            setOnClickListener { finish() }
+        }
     }
 
     private fun initSession() {
@@ -116,23 +131,22 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
             initSession()
     }
 
-    // TODO: toggle on mic
     // Connected to session
     override fun onConnected(session: Session) {
-        val publisher = Publisher.Builder(this)
+        publisher = Publisher.Builder(this)
             .name(authService.user.fullname)
-            .audioTrack(false)
             .build().apply {
                 renderer.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL)
             }
 
-        val publisherView = publisher.view
+        val publisherView = publisher?.view
         publisherViewContainer.addView(publisherView)
         if (publisherView is GLSurfaceView) {
             publisherView.setZOrderOnTop(true)
         }
 
         session.publish(publisher)
+        setupCallControllers()
     }
 
     // Disconnected from session
@@ -166,6 +180,27 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
         super.onDestroy()
         session?.disconnect()
         board?.let(firebaseService::stopVideoCall)
+    }
+
+    private fun setupCallControllers() {
+        findViewById<ImageView>(R.id.mute_mic).apply {
+            setOnClickListener { videoCallViewModel.turnOnOffMic() }
+            videoCallViewModel.micState.observe(this@VideoCallActivity) {
+                publisher?.publishAudio = it.isOn
+                setBackgroundResource(it.icon)
+            }
+        }
+
+        findViewById<ImageView>(R.id.mute_video).apply {
+            setOnClickListener { videoCallViewModel.turnOnOffVideo() }
+            videoCallViewModel.videoState.observe(this@VideoCallActivity) {
+                publisher?.publishVideo = it.isOn
+                val visibility = if (it.isOn) View.VISIBLE else View.GONE
+                publisher?.view?.visibility = visibility
+                publisherViewContainer.visibility = visibility
+                setBackgroundResource(it.icon)
+            }
+        }
     }
 
     private fun OpentokError.isTokenProblem() = message.contains("token", ignoreCase = true)

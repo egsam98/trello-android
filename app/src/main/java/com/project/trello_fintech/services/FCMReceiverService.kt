@@ -1,7 +1,6 @@
 package com.project.trello_fintech.services
 
 import android.app.PendingIntent
-import android.graphics.BitmapFactory
 import android.media.RingtoneManager
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
