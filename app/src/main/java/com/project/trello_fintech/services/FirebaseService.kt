@@ -3,13 +3,14 @@ package com.project.trello_fintech.services
 import android.content.Context
 import android.widget.Toast
 import com.google.firebase.firestore.*
+import com.google.firebase.messaging.FirebaseMessaging
 import com.project.trello_fintech.BuildConfig
 import com.project.trello_fintech.adapters.RxJava2Adapter
 import com.project.trello_fintech.api.BoardApi
 import com.project.trello_fintech.api.RetrofitClient
-import com.project.trello_fintech.api.TaskApi
 import com.project.trello_fintech.api.UserApi
 import com.project.trello_fintech.models.Board
+import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.models.firebase.FirebaseMessage
 import com.project.trello_fintech.models.firebase.SessionStart
 import com.project.trello_fintech.services.utils.NotificationType
@@ -24,6 +25,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 
+private const val TOPIC_NAME = "/topics"
+
 /**
  * Сервис взаимодействия с Firebase Relatime Database (доп-о Opentok для видеоконференций)
  * @property cxt Context
@@ -32,7 +35,6 @@ import javax.inject.Singleton
  * @property db FirebaseFirestore
  * @property boardsCollection CollectionReference
  * @property onError LiveEvent<Pair<String, Int?>>
- * @property taskApi TaskApi
  * @property userApi UserApi
  * @property boardApi BoardApi
  * @property opentokApi (com.project.trello_fintech.services.FirebaseService.OpentokApi..com.project.trello_fintech.services.FirebaseService.OpentokApi?)
@@ -47,13 +49,12 @@ class FirebaseService @Inject constructor(
     ) {
 
     private val db = FirebaseFirestore.getInstance()
-    val boardsCollection = db.collection("boards")
+    private val boardsCollection = db.collection("boards")
     private val onError = LiveEvent<Pair<String, Int?>>().apply {
         observeForever { (text) ->
             Toast.makeText(cxt, text, Toast.LENGTH_LONG).show()
         }
     }
-    private val taskApi by lazy { retrofitClient.create<TaskApi>(onError) }
     private val userApi by lazy { retrofitClient.create<UserApi>(onError) }
     private val boardApi by lazy { retrofitClient.create<BoardApi>(onError) }
 
@@ -71,16 +72,21 @@ class FirebaseService @Inject constructor(
             .create(OpentokApi::class.java)
     }
 
-    fun registerBoards(boards: List<Board>) {
-        boards.forEach {
-            val boardRef = boardsCollection.document(it.id)
-            val tasksRef = boardRef.collection("tasks")
-            taskApi.findAllByBoardId(it.id).doOnSuccess { tasks ->
-                    tasks.forEach { task -> tasksRef.document(task.id).setField("text", task.text) }
-                }
-                .subscribe()
-            boardRef.setField("title", it.title)
-        }
+    fun registerBoard(board: Board) {
+        val boardRef = boardsCollection.document(board.id)
+        boardRef.setField("title", board.title)
+            .addOnSuccessListener {
+                FirebaseMessaging.getInstance().subscribeToTopic("${TOPIC_NAME}/${board.id}")
+            }
+            .addOnFailureListener(Exception::show)
+    }
+
+    fun deleteBoard(board: Board) {
+        boardsCollection.document(board.id).delete()
+    }
+
+    fun deleteTask(task: Task) {
+        getTask(task) { it.reference.delete() }
     }
 
     fun videoCall(board: Board, func: (SessionStart) -> Unit) {
@@ -136,11 +142,20 @@ class FirebaseService @Inject constructor(
             .addOnFailureListener { it.show() }
     }
 
+    fun getTask(task: Task, onSuccess: (DocumentSnapshot) -> Unit) {
+        boardsCollection.document("${task.boardId}/tasks/${task.id}").get()
+            .addOnSuccessListener { onSuccess(it) }
+    }
+
     private fun sendInvitation(board: Board) {
         val currentUser = authService.user
-        val msg = FirebaseMessage.create(currentUser.id, "Видеоконференция", board.id,
-            "${currentUser.fullname} приглашает Вас на видеоконференцию!",
-            NotificationType.ACCEPTDECLINE)
+        val msgData = FirebaseMessage.Data(
+            fromId = currentUser.id,
+            notificationType = NotificationType.ACCEPTDECLINE,
+            boardId = board.id,
+            title = "Видеоконференция",
+            body = "${currentUser.fullname} приглашает Вас на видеоконференцию!")
+        val msg = FirebaseMessage("$TOPIC_NAME/${board.id}", msgData)
         fcmSenderService.send(msg)
     }
 }

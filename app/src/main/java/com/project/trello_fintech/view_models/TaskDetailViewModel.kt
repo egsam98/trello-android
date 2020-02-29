@@ -16,7 +16,6 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.firestore.DocumentReference
 import com.project.trello_fintech.activities.MainActivity
 import java.io.IOException
 import java.io.InputStream
@@ -90,8 +89,8 @@ class TaskDetailViewModel(
     val firebaseData = FirebaseData()
 
     private fun loadFromFirebase(task: Task) {
-        getTaskDocumentReference(task).get().addOnSuccessListener { document ->
-            document.getString("vcsUrl")?.let { firebaseData.vcsUrl.value = it }
+        firebaseService.getTask(task) { document ->
+            firebaseData.vcsUrl.value = document.getString("vcsUrl").orEmpty()
         }
     }
 
@@ -200,11 +199,9 @@ class TaskDetailViewModel(
     fun updateInputs() {
         val task = task.value!!
         taskRetrofit.updateDescription(task.id, task.description).subscribe()
-        getTaskDocumentReference().setField("vcsUrl", firebaseData.vcsUrl.value.orEmpty())
-    }
-
-    private fun getTaskDocumentReference(t: Task = task.value!!): DocumentReference {
-        return firebaseService.boardsCollection.document("${t.boardId}/tasks/${t.id}")
+        firebaseService.getTask(task) {
+            it.reference.setField("vcsUrl", firebaseData.vcsUrl.value.orEmpty())
+        }
     }
 
     fun showHistory() {

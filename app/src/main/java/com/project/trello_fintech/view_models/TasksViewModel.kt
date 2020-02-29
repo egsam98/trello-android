@@ -5,6 +5,7 @@ import androidx.lifecycle.Observer
 import com.project.trello_fintech.api.*
 import com.project.trello_fintech.models.Column
 import com.project.trello_fintech.models.Task
+import com.project.trello_fintech.services.FirebaseService
 import com.project.trello_fintech.utils.reactive.LiveEvent
 import com.project.trello_fintech.utils.reactive.LiveList
 import io.reactivex.Observable
@@ -27,7 +28,9 @@ import java.util.*
  * @property onError LiveEvent<Pair<String, Int?>>
  * @property onClick LiveEvent<String>
  */
-class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewModel() {
+class TasksViewModel(
+    private val firebaseService: FirebaseService,
+    private val retrofitClient: RetrofitClient): CleanableViewModel() {
 
     companion object {
         @JvmStatic
@@ -140,8 +143,11 @@ class TasksViewModel(private val retrofitClient: RetrofitClient): CleanableViewM
 
     private fun removeById(column: Column, id: String) {
         tasks.getValue(column).data.find{ it.id == id }?.let {
-            taskRetrofit.delete(id).subscribe()
+            val disposable = taskRetrofit.delete(id).subscribe {
+                firebaseService.deleteTask(it)
+            }
             tasks.getValue(column).remove(it)
+            clearOnDestroy(disposable)
         }
     }
 

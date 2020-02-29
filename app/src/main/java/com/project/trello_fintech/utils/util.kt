@@ -11,9 +11,11 @@ import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.WriteBatch
 import com.project.trello_fintech.Application
 import com.project.trello_fintech.R
 import java.lang.Exception
@@ -51,11 +53,18 @@ infix fun <T> MutableLiveData<MutableList<T>>.remove(elem: T) {
     update()
 }
 
-fun DocumentReference.setField(key: String, value: Any, merge: Boolean = true) {
-    if (merge)
+fun DocumentReference.setField(key: String, value: Any, merge: Boolean = true): Task<Void> {
+    return if (merge)
         set(mapOf(key to value), SetOptions.merge()).addOnFailureListener { it.show() }
     else
         set(mapOf(key to value)).addOnFailureListener { it.show() }
+}
+
+fun WriteBatch.setField(document: DocumentReference, key: String, value: Any, merge: Boolean = true): WriteBatch {
+    return if (merge)
+        set(document, mapOf(key to value), SetOptions.merge())
+    else
+        set(document, mapOf(key to value))
 }
 
 fun DocumentReference.incFields(vararg fieldName: String, value: Long = 1) {

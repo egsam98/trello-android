@@ -34,7 +34,10 @@ class FCMReceiverService: FirebaseMessagingService() {
 
     override fun onMessageReceived(msg: RemoteMessage) {
         val data = FirebaseMessage.parseData(msg)
-        data?.let { sendNotification(msg, it) }
+        data?.let {
+            if (it.fromId != authService.user.id)
+                sendNotification(msg, it)
+        }
     }
 
     private fun sendNotification(msg: RemoteMessage, data: FirebaseMessage.Data) {

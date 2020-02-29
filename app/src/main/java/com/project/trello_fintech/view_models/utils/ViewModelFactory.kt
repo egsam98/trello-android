@@ -29,7 +29,7 @@ class ViewModelFactory @Inject constructor(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(BoardsViewModel::class.java) -> BoardsViewModel(retrofitClient)
-            modelClass.isAssignableFrom(TasksViewModel::class.java) -> TasksViewModel(retrofitClient)
+            modelClass.isAssignableFrom(TasksViewModel::class.java) -> TasksViewModel(firebaseService, retrofitClient)
             modelClass.isAssignableFrom(UsersViewModel::class.java) -> UsersViewModel(retrofitClient)
             modelClass.isAssignableFrom(TaskDetailViewModel::class.java) ->
                 TaskDetailViewModel(cxt, retrofitClient, firebaseService)

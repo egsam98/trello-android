@@ -76,7 +76,9 @@ class BoardsViewModel(private val retrofitClient: RetrofitClient): CleanableView
             .cast<MutableList<Board>>()
             .subscribe { boardList ->
                 boards.data = boardList
-                firebaseService.registerBoards(boardList)
+                boardList.forEach {
+                    firebaseService.registerBoard(it)
+                }
             }
         clearOnDestroy(disposable)
     }
@@ -91,6 +93,7 @@ class BoardsViewModel(private val retrofitClient: RetrofitClient): CleanableView
             val disposable = boardRetrofit.create(board, category.id, COLORS.random())
                 .subscribe { board ->
                     board.category = category
+                    firebaseService.registerBoard(board)
                     boards add board
                     onClick(board)
                 }
@@ -99,8 +102,11 @@ class BoardsViewModel(private val retrofitClient: RetrofitClient): CleanableView
     }
 
     fun remove(board: Board) {
-        boardRetrofit.delete(board.id).subscribe()
+        val disposable = boardRetrofit.delete(board.id).subscribe {
+            firebaseService.deleteBoard(board)
+        }
         boards remove board
+        clearOnDestroy(disposable)
     }
 
     fun move(source: Board, target: Board) {
