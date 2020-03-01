@@ -67,19 +67,19 @@ fun WriteBatch.setField(document: DocumentReference, key: String, value: Any, me
         set(document, mapOf(key to value))
 }
 
-fun DocumentReference.incFields(vararg fieldName: String, value: Long = 1) {
+fun DocumentReference.incFields(vararg fieldName: String, value: Long = 1): Task<Void> {
     val updates = fieldName.associate { Pair(it, FieldValue.increment(value)) }
-    update(updates).addOnFailureListener { it.show() }
+    return update(updates).addOnFailureListener { it.show() }
 }
 
-fun DocumentReference.decFields(vararg fieldName: String, value: Long = 1) {
+fun DocumentReference.decFields(vararg fieldName: String, value: Long = 1): Task<Void> {
     val updates = fieldName.associate { Pair(it, FieldValue.increment(-value)) }
-    update(updates).addOnFailureListener { it.show() }
+    return update(updates).addOnFailureListener { it.show() }
 }
 
-fun DocumentReference.deleteFields(vararg fieldName: String) {
+fun DocumentReference.deleteFields(vararg fieldName: String): Task<Void> {
     val updates = fieldName.associate { Pair(it, FieldValue.delete()) }
-    update(updates).addOnFailureListener { it.show() }
+    return update(updates).addOnFailureListener { it.show() }
 }
 
 fun Exception.show() {

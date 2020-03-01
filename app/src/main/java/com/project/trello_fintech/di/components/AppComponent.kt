@@ -5,6 +5,7 @@ import com.project.trello_fintech.activities.VideoCallActivity
 import com.project.trello_fintech.di.modules.*
 import com.project.trello_fintech.services.FCMReceiverService
 import com.project.trello_fintech.services.NotificationService
+import com.project.trello_fintech.services.VideoCallWatcherService
 import com.project.trello_fintech.view_models.BoardsViewModel
 import dagger.Component
 import javax.inject.Singleton
@@ -20,8 +21,7 @@ interface AppComponent {
 
     fun inject(boardsViewModel: BoardsViewModel)
     fun inject(videoCallActivity: VideoCallActivity)
-
     fun inject(fcmReceiverService: FCMReceiverService)
-
     fun inject(notificationService: NotificationService)
+    fun inject(videoCallWatcherService: VideoCallWatcherService)
 }

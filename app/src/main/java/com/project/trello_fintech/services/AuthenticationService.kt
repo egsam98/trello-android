@@ -1,11 +1,9 @@
 package com.project.trello_fintech.services
 
 import android.content.Context
-import android.widget.Toast
 import com.project.trello_fintech.api.RetrofitClient
 import com.project.trello_fintech.api.UserApi
 import com.project.trello_fintech.models.User
-import com.project.trello_fintech.utils.reactive.LiveEvent
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,14 +20,9 @@ class AuthenticationService @Inject constructor(
     retrofitClient: RetrofitClient) {
 
     private val userApi by lazy {
-        val onError = LiveEvent<Pair<String, Int?>>().apply {
-            observeForever { (text) ->
-                Toast.makeText(cxt, text, Toast.LENGTH_LONG).show()
-            }
-        }
-        retrofitClient.create<UserApi>(onError, scheduler = Schedulers.io())
+        retrofitClient.create<UserApi>(scheduler = Schedulers.io())
     }
 
     val user: User
-        get() = userApi.findUser("me").blockingGet()
+        get()  = userApi.findUser("me").blockingGet()
 }

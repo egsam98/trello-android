@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
 
@@ -16,26 +16,32 @@
             android:allowBackup="true"
             android:label="@string/app_name"
             android:supportsRtl="true"
-            android:theme="@style/AppTheme" tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.project.trello_fintech.activities.MainActivity">
+            android:theme="@style/AppTheme"
+            tools:ignore="GoogleAppIndexingWarning">
+
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity android:name=".activities.GanttChartActivity"/>
-        <activity android:name=".activities.VideoCallActivity"
-                  android:theme="@style/TelegramLike"
-                  android:screenOrientation="portrait" />
+        <activity
+                android:name=".activities.VideoCallActivity"
+                android:screenOrientation="portrait"
+                android:theme="@style/TelegramLike"/>
 
-        <service android:name=".services.FCMReceiverService"
-                 android:exported="false">
+        <service android:name=".services.VideoCallWatcherService"
+                 android:stopWithTask="false"
+                 android:exported="false" />
+        <service android:name=".services.FCMReceiverService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
 
-        <receiver android:name="com.project.trello_fintech.services.NotificationService"/>
+        <receiver android:name=".services.NotificationService"/>
     </application>
 
 </manifest>

@@ -2,6 +2,7 @@ package com.project.trello_fintech.services
 
 import android.content.Context
 import android.widget.Toast
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.*
 import com.google.firebase.messaging.FirebaseMessaging
 import com.project.trello_fintech.BuildConfig
@@ -16,8 +17,10 @@ import com.project.trello_fintech.models.firebase.SessionStart
 import com.project.trello_fintech.services.utils.NotificationType
 import com.project.trello_fintech.utils.*
 import com.project.trello_fintech.utils.reactive.LiveEvent
+import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -114,17 +117,35 @@ class FirebaseService @Inject constructor(
             .subscribe()
     }
 
-    fun stopVideoCall(board: Board) {
-        getSession(board) {_, document ->
-            document.getLong("usersCount")
-                ?.let {
-                    if (it <= 1)
-                        document.reference.deleteFields("session", "usersCount")
-                    else
-                        document.reference.decFields("usersCount")
-                }?:
-                    document.reference.deleteFields("session")
-        }
+    fun stopVideoCall(board: Board, blocking: Boolean = false) {
+        if (blocking)
+            Completable.fromAction {
+                try {
+                    val boardDocument = Tasks.await(boardsCollection.document(board.id).get())
+                    val usersCount = boardDocument.getLong("usersCount")
+                    Tasks.await(
+                        if (usersCount == null || usersCount <= 1)
+                            boardDocument.reference.deleteFields("session", "usersCount")
+                        else
+                            boardDocument.reference.decFields("usersCount")
+                    )
+                } catch (e: Exception) {
+                    e.show()
+                }
+            }
+            .subscribeOn(Schedulers.io())
+            .blockingAwait()
+        else
+            getSession(board) {_, document ->
+                document.getLong("usersCount")
+                    ?.let {
+                        if (it <= 1)
+                            document.reference.deleteFields("session", "usersCount")
+                        else
+                            document.reference.decFields("usersCount")
+                    }?:
+                        document.reference.deleteFields("session")
+            }
     }
 
     fun removeVideoCall(board: Board) {

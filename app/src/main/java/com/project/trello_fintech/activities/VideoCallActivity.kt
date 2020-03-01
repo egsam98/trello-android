@@ -23,6 +23,7 @@ import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.firebase.SessionStart
 import com.project.trello_fintech.services.AuthenticationService
 import com.project.trello_fintech.services.FirebaseService
+import com.project.trello_fintech.services.VideoCallWatcherService
 import com.project.trello_fintech.services.NotificationService
 import com.project.trello_fintech.utils.observe
 import com.project.trello_fintech.view_models.VideoCallViewModel
@@ -115,6 +116,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
         try{
             board = intent.getSerializableExtra(BOARD_ARG) as Board
             firebaseService.videoCall(board!!) { callback(it) }
+            VideoCallWatcherService.start(this, board!!)
         } catch (e: Exception) {
             if (e is NullPointerException || e is ClassCastException) {
                 intent.getStringExtra(BOARD_ID_ARG)?.let { boardId ->
@@ -179,7 +181,7 @@ class VideoCallActivity : AppCompatActivity(), Session.SessionListener {
     override fun onDestroy() {
         super.onDestroy()
         session?.disconnect()
-        board?.let(firebaseService::stopVideoCall)
+        VideoCallWatcherService.stop(this)
     }
 
     private fun setupCallControllers() {

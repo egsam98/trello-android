@@ -36,12 +36,12 @@ class FCMReceiverService: FirebaseMessagingService() {
         val data = FirebaseMessage.parseData(msg)
         data?.let {
             if (it.fromId != authService.user.id)
-                sendNotification(msg, it)
+                sendNotification(it)
         }
     }
 
-    private fun sendNotification(msg: RemoteMessage, data: FirebaseMessage.Data) {
-        val notificationId = msg.from?.hashCode()?: -1
+    private fun sendNotification(data: FirebaseMessage.Data) {
+        val notificationId = data.fromId.hashCode()
 
         val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
         val vibration = LongArray(10) { 1000 }
