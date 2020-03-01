@@ -1,9 +1,6 @@
 package com.project.trello_fintech.fragments
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.*
 import android.widget.*
@@ -11,10 +8,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.navigation.NavigationView
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.activities.MainActivity
@@ -31,6 +24,7 @@ import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.GanttChartActivity
 import com.project.trello_fintech.activities.VideoCallActivity
 import com.project.trello_fintech.listeners.OnTaskSearchListener
+import com.project.trello_fintech.utils.TrelloUtil
 import com.project.trello_fintech.views.ClearableSearchView
 
 
@@ -38,7 +32,9 @@ import com.project.trello_fintech.views.ClearableSearchView
  * Фрагмент списка задач (в виде BoardView)
  * @property activity MainActivity
  * @property cleanableViewModelProvider CleanableViewModelProvider
+ * @property trelloUtil TrelloUtil
  * @property tasksViewModel TasksViewModel
+ * @property selectedBoard Board
  * @property boardView BoardView?
  */
 class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener, DrawerMenuOwner {
@@ -51,11 +47,9 @@ class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener
         }
     }
 
-    @Inject
-    lateinit var activity: MainActivity
-
-    @Inject
-    lateinit var cleanableViewModelProvider: CleanableViewModelProvider
+    @Inject lateinit var activity: MainActivity
+    @Inject lateinit var cleanableViewModelProvider: CleanableViewModelProvider
+    @Inject lateinit var trelloUtil: TrelloUtil
 
     private lateinit var tasksViewModel: TasksViewModel
     private lateinit var selectedBoard: Board
@@ -107,20 +101,9 @@ class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener
 
         selectedBoard = requireArguments().getSerializable(BOARD_ARG) as Board
 
-        val prefs = selectedBoard.prefs
-        if (prefs != null) {
-            Glide.with(this@TasksFragment)
-                .asBitmap()
-                .load(prefs.imageUrls?.last()?.url?: prefs.fromHexColor())
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(object: CustomTarget<Bitmap>() {
-                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                        val drawable = BitmapDrawable(resources, resource)
-                        view.findViewById<ConstraintLayout>(R.id.tasks_layout).background = drawable
-                    }
-
-                    override fun onLoadCleared(placeholder: Drawable?) {}
-                })
+        if (selectedBoard.prefs != null) {
+            val layout = view.findViewById<ConstraintLayout>(R.id.tasks_layout)
+            trelloUtil.loadBoardBackground(selectedBoard, layout)
         }
 
         for (column in selectedBoard.columns) {

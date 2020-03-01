@@ -24,4 +24,5 @@
     <string name="start_or_continue_videocall">Начать/продолжить видеозвонок</string>
     <string name="accept">Принять</string>
     <string name="decline">Отклонить</string>
+    <string name="upload_attachment">Загрузить вложение</string>
 </resources>

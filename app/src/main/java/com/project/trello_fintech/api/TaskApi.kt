@@ -1,5 +1,6 @@
 package com.project.trello_fintech.api
 
+import com.project.trello_fintech.models.Board
 import com.project.trello_fintech.models.Task
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -12,6 +13,9 @@ interface TaskApi {
 
     @GET("list/{id}/cards")
     fun findAllByColumnId(@Path("id") id: String): Single<List<Task>>
+
+    @GET("cards/{id}/board")
+    fun findBoard(@Path("id") taskId: String): Single<Board>
 
     @POST("cards/")
     fun create(@Body task: Task, @Query("idList") idList: String): Single<Task>

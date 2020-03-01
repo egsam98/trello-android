@@ -1,7 +1,6 @@
 package com.project.trello_fintech.view_models
 
 import androidx.lifecycle.*
-import com.project.trello_fintech.Application
 import com.project.trello_fintech.api.BoardApi
 import com.project.trello_fintech.api.RetrofitClient
 import com.project.trello_fintech.api.CategoryApi
@@ -14,7 +13,6 @@ import com.project.trello_fintech.utils.reactive.LiveEvent
 import com.project.trello_fintech.utils.reactive.LiveList
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.cast
-import javax.inject.Inject
 
 
 /**
@@ -32,10 +30,9 @@ private val COLORS = arrayOf("blue", "orange", "green", "red", "purple", "pink",
  * @property onClick LiveEvent<Board>
  * @property onError LiveEvent<Pair<String, Int?>>
  */
-class BoardsViewModel(private val retrofitClient: RetrofitClient): CleanableViewModel() {
-
-    @Inject
-    lateinit var firebaseService: FirebaseService
+class BoardsViewModel(
+    private val firebaseService: FirebaseService,
+    private val retrofitClient: RetrofitClient): CleanableViewModel() {
 
     private val boardRetrofit by lazy { retrofitClient.create<BoardApi>(onError) }
     private val categoryRetrofit by lazy { retrofitClient.create<CategoryApi>(onError) }
@@ -44,8 +41,6 @@ class BoardsViewModel(private val retrofitClient: RetrofitClient): CleanableView
     val isLoading = MutableLiveData<Boolean>()
     val onClick = LiveEvent<Board>()
     val onError = LiveEvent<Pair<String, Int?>>()
-
-    init { Application.component.inject(this) }
 
     fun observe(subscribe: (List<IListItem>) -> Unit) {
         val disposable = boards.observe()

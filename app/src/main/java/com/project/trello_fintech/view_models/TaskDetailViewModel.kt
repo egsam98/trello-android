@@ -1,9 +1,7 @@
 package com.project.trello_fintech.view_models
 
 import android.app.Notification
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.reactive.LiveEvent
 import okhttp3.RequestBody
@@ -12,11 +10,11 @@ import com.project.trello_fintech.utils.reactive.LiveList
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import android.provider.MediaStore
+import android.view.View
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.MutableLiveData
-import com.project.trello_fintech.activities.MainActivity
 import java.io.IOException
 import java.io.InputStream
 import java.lang.IllegalArgumentException
@@ -54,7 +52,7 @@ class FirebaseData {
  * @property onAttachmentClick LiveEvent<Attachment>
  * @property onOpenHistory LiveEvent<Unit>
  * @property actionsTitle Array<String>
- * @property actions Array<LiveEvent<Unit>?>
+ * @property trelloUtil TrelloUtil
  * @property historyList MutableLiveData<List<History>>
  * @property isLoading MutableLiveData<Boolean>
  * @property participants MutableLiveData<List<User>>
@@ -64,6 +62,7 @@ class FirebaseData {
 class TaskDetailViewModel(
     private val cxt: Context,
     private val retrofitClient: RetrofitClient,
+    private val trelloUtil: TrelloUtil,
     private val firebaseService: FirebaseService): CleanableViewModel() {
 
     var task = MutableLiveData<Task>(Task())
@@ -79,8 +78,6 @@ class TaskDetailViewModel(
     val onAttachmentClick = LiveEvent<Task.Attachment>()
     val onOpenHistory = LiveEvent<Unit>()
 
-    val actionsTitle = arrayOf("Загрузить вложение", "Array item one", "Array item two")
-    val actions = arrayOf(LiveEvent<Unit>(), null, null)
     val historyList = MutableLiveData<List<Task.History>>()
     val isLoading = MutableLiveData<Boolean>(false)
     val participants = MutableLiveData<List<User>>()
@@ -94,7 +91,7 @@ class TaskDetailViewModel(
         }
     }
 
-    fun attachTask(task: Task) {
+    fun attachTask(task: Task, boardBackgroundView: View) {
         val s1 = attachmentRetrofit.findAllByTaskId(task.id).toObservable()
         val s2 = userRetrofit.findAllByTaskId(task.id).toObservable()
         val s3 = checklistRetrofit.findAllByTaskId(task.id).toObservable()
@@ -108,12 +105,13 @@ class TaskDetailViewModel(
             .doOnComplete { isLoading.value = false }
             .subscribe { this.task.value = task }
         loadFromFirebase(task)
+        loadBoardBackground(task, boardBackgroundView)
         clearOnDestroy(disposable)
     }
 
-    fun attachTask(taskId: String) {
+    fun attachTask(taskId: String, boardBackgroundView: View) {
         val disposable = taskRetrofit.findById(taskId).subscribe {
-                task -> attachTask(task)
+                task -> attachTask(task, boardBackgroundView)
         }
         clearOnDestroy(disposable)
     }
@@ -173,18 +171,13 @@ class TaskDetailViewModel(
     }
 
     private fun sendReadyNotification(attachment: Task.Attachment) {
-        val returnToAppIntent = PendingIntent.getActivity(cxt, 0,
-            Intent(cxt, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT)
-
         val notification = NotificationCompat.Builder(cxt, "")
             .setContentTitle(cxt.resources.getString(R.string.app_name))
             .setSmallIcon(android.R.drawable.sym_def_app_icon)
             .setContentText("Результат загрузки вложения")
             .setDefaults(Notification.DEFAULT_ALL)
             .setStyle(NotificationCompat.BigTextStyle()
-                .bigText("Вложение ${attachment.name} успешно загружено в задачу ${task.value!!.text}\n" +
-                        "Зайдите в приложение, чтобы проверить"))
-            .setContentIntent(returnToAppIntent)
+                .bigText("Вложение ${attachment.name} успешно загружено в задачу ${task.value!!.text}"))
             .setAutoCancel(true)
             .build()
 
@@ -272,5 +265,12 @@ class TaskDetailViewModel(
             it.items.remove(deletedCheckitem)
             checklists.update()
         }
+    }
+
+    private fun loadBoardBackground(task: Task, view: View) {
+        val disposable = taskRetrofit.findBoard(task.id).subscribe { board ->
+            trelloUtil.loadBoardBackground(board, view)
+        }
+        clearOnDestroy(disposable)
     }
 }

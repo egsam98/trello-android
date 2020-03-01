@@ -4,9 +4,7 @@ import android.content.Context
 import com.project.trello_fintech.BuildConfig
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
-import com.project.trello_fintech.api.RetrofitClient
 import com.project.trello_fintech.di.scopes.MainActivityScope
-import com.project.trello_fintech.utils.TrelloUtil
 import dagger.Module
 import dagger.Provides
 import javax.inject.Named
@@ -32,7 +30,4 @@ class MainActivityModule(private val mainActivity: MainActivity) {
                 "key=${BuildConfig.TRELLO_API_KEY}&" +
                 "return_url=${BuildConfig.TRELLO_URL_CALLBACK}"
     }
-
-    @Provides
-    fun getTrelloUtil(retrofitClient: RetrofitClient) = TrelloUtil(retrofitClient)
 }

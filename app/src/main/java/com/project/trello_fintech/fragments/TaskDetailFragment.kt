@@ -15,7 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.*
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.navigation.NavigationView
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
@@ -25,11 +25,11 @@ import com.project.trello_fintech.adapters.ChecklistsAdapter
 import com.project.trello_fintech.adapters.ParticipantsAdapter
 import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.Task
+import com.project.trello_fintech.utils.TrelloUtil
 import com.project.trello_fintech.utils.getVCSLogo
 import com.project.trello_fintech.utils.toDefaultFormat
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
-import com.project.trello_fintech.views.DropDownListView
 import java.lang.IllegalStateException
 import java.util.*
 import javax.inject.Inject
@@ -79,14 +79,10 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
         }
     }
 
-    @Inject
-    lateinit var cxt: Context
-
-    @Inject
-    lateinit var activity: MainActivity
-
-    @Inject
-    lateinit var cleanableViewModelProvider: CleanableViewModelProvider
+    @Inject lateinit var cxt: Context
+    @Inject lateinit var activity: MainActivity
+    @Inject lateinit var cleanableViewModelProvider: CleanableViewModelProvider
+    @Inject lateinit var trelloUtil: TrelloUtil
 
     private var attachmentsAdapter: AttachmentsAdapter? = null
     private var binding: ViewDataBinding? = null
@@ -106,9 +102,10 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         MainActivity.component.inject(this)
         val args = requireArguments()
+        val boardBackgroundView = view.findViewById<AppBarLayout>(R.id.app_bar)
         args.getSerializable(TASK_ARG)
-            ?.let { taskDetailViewModel.attachTask(it as Task) }
-            ?: run { args.getString(TASK_ID_ARG)?.let { taskDetailViewModel.attachTask(it) } }
+            ?.let { taskDetailViewModel.attachTask(it as Task, boardBackgroundView) }
+            ?: run { args.getString(TASK_ID_ARG)?.let { taskDetailViewModel.attachTask(it, boardBackgroundView) } }
 
         binding?.setVariable(BR.viewModel, taskDetailViewModel)
 
@@ -121,22 +118,6 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
             adapter = attachmentsAdapter
         }
 
-        val taskActionsView = view.findViewById<DropDownListView>(R.id.task_actions).apply {
-            adapter = ArrayAdapter(cxt, android.R.layout.simple_list_item_1, taskDetailViewModel.actionsTitle)
-            setOnItemClickListener { _, _, i, _ ->
-                openClose()
-                taskDetailViewModel.actions[i]?.emit()
-            }
-        }
-
-        view.findViewById<FloatingActionButton>(R.id.task_action).setOnClickListener {
-            taskActionsView.openClose()
-        }
-
-        taskDetailViewModel.actions[0]?.observe(this, Observer {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply { type = "*/*" }
-            startActivityForResult(intent, UPLOAD_ATTACHMENT_REQUEST)
-        })
         taskDetailViewModel.observeAttachments {
             attachmentsAdapter?.data = it
         }
@@ -205,6 +186,7 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
         setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.add_checklist -> showChecklistDialog()
+                R.id.add_attachment -> addAttachment()
             }
             true
         }
@@ -224,5 +206,10 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
     fun showCheckitemDialog(checklist: Checklist, checkitem: Checklist.Item? = null) {
         val fragment = CheckitemDialogFragment.create(checklist, checkitem)
         fragment.show(childFragmentManager, null)
+    }
+
+    private fun addAttachment() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply { type = "*/*" }
+        startActivityForResult(intent, UPLOAD_ATTACHMENT_REQUEST)
     }
 }
