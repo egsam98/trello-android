@@ -22,7 +22,16 @@ import java.lang.Exception
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
+import kotlin.random.Random
 
+
+fun randomString(length: Int): String {
+    val charPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    return (1..length)
+        .map { Random.nextInt(0, charPool.length) }
+        .map(charPool::get)
+        .joinToString("")
+}
 
 fun Date?.toDefaultFormat(): String = when (this) {
     null -> "Нет данных"

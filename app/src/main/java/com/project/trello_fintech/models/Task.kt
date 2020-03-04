@@ -3,10 +3,11 @@ package com.project.trello_fintech.models
 import android.text.Html
 import android.text.Spanned
 import com.google.gson.annotations.SerializedName
+import com.project.trello_fintech.utils.randomString
 import java.io.Serializable
 import java.lang.IllegalArgumentException
 import java.util.*
-import kotlin.random.Random
+
 
 /**
  * Задача - элементарная структура (класс) проекта
@@ -20,7 +21,7 @@ import kotlin.random.Random
  * @property attachments List<Attachment>
  */
 data class Task(
-        @SerializedName("name") val text: String = randomString(),
+        @SerializedName("name") val text: String = randomString(5),
         @SerializedName("id") val id: String = ""
     ): Serializable {
 
@@ -122,13 +123,4 @@ data class Task(
                 return Html.fromHtml(html)
             }
     }
-}
-
-// TODO: move to utils
-private fun randomString(): String {
-    val charPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    return (1..5)
-        .map { Random.nextInt(0, charPool.length) }
-        .map(charPool::get)
-        .joinToString("")
 }
