@@ -2,11 +2,7 @@ package com.project.trello_fintech.models
 
 import android.text.Html
 import android.text.Spanned
-import com.google.gson.Gson
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
-import org.json.JSONObject
 import java.io.Serializable
 import java.lang.IllegalArgumentException
 import java.util.*
@@ -32,6 +28,7 @@ data class Task(
     @SerializedName("desc") var description: String = ""
     @SerializedName("idBoard") val boardId: String = ""
     @SerializedName("due") val dueDate: Date? = null
+    @SerializedName("shortUrl") val shortUrl: String = ""
 
     var creationDate: Date = Date()
 

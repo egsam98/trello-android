@@ -267,6 +267,11 @@ class TaskDetailViewModel(
         }
     }
 
+    fun findAllTasksInBoard(onSuccess: (List<Task>) -> Unit) {
+        val disposable = taskRetrofit.findAllByBoardId(task.value!!.boardId).subscribe(onSuccess)
+        clearOnDestroy(disposable)
+    }
+
     private fun loadBoardBackground(task: Task, view: View) {
         val disposable = taskRetrofit.findBoard(task.id).subscribe { board ->
             trelloUtil.loadBoardBackground(board, view)

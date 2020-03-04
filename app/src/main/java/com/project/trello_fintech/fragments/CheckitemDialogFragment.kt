@@ -2,29 +2,31 @@ package com.project.trello_fintech.fragments
 
 import android.app.Dialog
 import android.os.Bundle
+import android.widget.AutoCompleteTextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import com.google.android.material.textfield.TextInputEditText
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
+import com.project.trello_fintech.adapters.AutoCompleteTasksAdapter
 import com.project.trello_fintech.models.Checklist
+import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
 import javax.inject.Inject
 
 
-// TODO: add subtask option implement
 /**
  * Диалоговое окно создания/редактирования элемента чек-листа
  * @property cleanableViewModelProvider CleanableViewModelProvider
  * @property taskDetailViewModel TaskDetailViewModel
- * @property dialogText TextInputEditText
+ * @property autoCompleteTextView TextInputEditText
  */
 class CheckitemDialogFragment: DialogFragment() {
     companion object {
         private const val CHECKLIST_ID_ARG = "checklist_id"
         private const val CHECKITEM_ID_ARG = "checkitem_id"
         private const val CHECKITEM_TITLE_ARG = "checkitem_title"
+        private const val TEXT_STATE = "text"
         fun create(checklist: Checklist, checkitem: Checklist.Item?): CheckitemDialogFragment {
             val bundle = Bundle().apply {
                 putString(CHECKLIST_ID_ARG, checklist.id)
@@ -44,22 +46,32 @@ class CheckitemDialogFragment: DialogFragment() {
         cleanableViewModelProvider.get<TaskDetailViewModel>(requireParentFragment().viewLifecycleOwner)
     }
 
-    lateinit var dialogText: TextInputEditText
+    private lateinit var autoCompleteTextView: AutoCompleteTextView
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         MainActivity.component.inject(this)
-        dialogText = TextInputEditText(context).apply {
-            val text = savedInstanceState?.getCharSequence("text")?: arguments?.getString(CHECKITEM_TITLE_ARG)
+
+        autoCompleteTextView = AutoCompleteTextView(context).apply {
+            val text = savedInstanceState?.getCharSequence(TEXT_STATE)?: arguments?.getString(CHECKITEM_TITLE_ARG)
             setText(text)
+        }
+
+        taskDetailViewModel.findAllTasksInBoard {
+            val adapter = AutoCompleteTasksAdapter(requireContext(), it)
+            autoCompleteTextView.setAdapter(adapter)
+            autoCompleteTextView.setOnItemClickListener { adapterView, _, i, _ ->
+                val task = adapterView.getItemAtPosition(i) as Task
+                autoCompleteTextView.setText(task.shortUrl)
+            }
         }
         return AlertDialog.Builder(requireContext())
             .setTitle(R.string.checkitem)
-            .setView(dialogText)
+            .setView(autoCompleteTextView)
             .setPositiveButton(R.string.save) { _,_ ->
                 val checklistId = arguments?.getString(CHECKLIST_ID_ARG)
                 val checkitemId = arguments?.getString(CHECKITEM_ID_ARG)
 
-                val newTitle = dialogText.text.toString()
+                val newTitle = autoCompleteTextView.text.toString()
                 checklistId?.let {
                     checkitemId?.let {
                         taskDetailViewModel.updateCheckitem(it, title = newTitle)
@@ -75,6 +87,6 @@ class CheckitemDialogFragment: DialogFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putCharSequence("text", dialogText.text)
+        outState.putCharSequence(TEXT_STATE, autoCompleteTextView.text)
     }
 }

@@ -14,6 +14,9 @@ interface TaskApi {
     @GET("list/{id}/cards")
     fun findAllByColumnId(@Path("id") id: String): Single<List<Task>>
 
+    @GET("boards/{id}/cards")
+    fun findAllByBoardId(@Path("id") id: String): Single<List<Task>>
+
     @GET("cards/{id}/board")
     fun findBoard(@Path("id") taskId: String): Single<Board>
 

@@ -12,7 +12,6 @@ import com.bumptech.glide.request.transition.Transition
 import com.project.trello_fintech.api.RetrofitClient
 import com.project.trello_fintech.api.TaskApi
 import com.project.trello_fintech.models.Board
-import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,13 +26,13 @@ class TrelloUtil @Inject constructor(
      * @param url String
      * @return Pair<String, String> ID и текст задачи
      */
-    fun parseTaskUrl(url: String): Pair<String, String> {
+    fun parseTaskUrl(url: String, onReturn: (Pair<String, String>) -> Unit) {
         val id = url.substringAfterLast('/')
-        val retrofit = retrofitClient.create<TaskApi>(scheduler = Schedulers.io())
-        val text = retrofit.findById(id)
+        val retrofit = retrofitClient.create<TaskApi>()
+        retrofit.findById(id)
             .map { it.text }
-            .blockingGet()
-        return Pair(id, text)
+            .doOnSuccess { onReturn(id to it) }
+            .subscribe()
     }
 
     /**
