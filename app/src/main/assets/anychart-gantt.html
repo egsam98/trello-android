@@ -1,32 +1,32 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <script src="https://cdn.anychart.com/releases/8.7.1/js/anychart-core.min.js"></script>
-    <script src="https://cdn.anychart.com/releases/8.7.1/js/anychart-gantt.min.js"></script>
-    <script>
-    anychart.onDocumentReady(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        let data = JSON.parse(urlParams.get('json'));
-        data = Object.entries(data).map(([column, tasksJson]) => ({
-            name: column,
-            collapsed: true,
-            children: JSON.parse(tasksJson).map(task => ({
-                id: task.id,
-                name: task.text,
-                actualStart: task.creationDate,
-                actualEnd: task.dueDate,
-            }))
-        }))
-
-        const chart = anychart.ganttProject();
-        chart.data(anychart.data.tree(data, "as-tree"));
-        chart.container("container");
-        chart.draw();
-        chart.fitAll();
-    });
-    </script>
 </head>
 <body>
     <div id="container"></div>
+    <script src="https://cdn.anychart.com/releases/8.7.1/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.7.1/js/anychart-gantt.min.js"></script>
+    <script>
+        anychart.onDocumentReady(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const title = urlParams.get('title');
+            const data = JSON.parse(urlParams.get("json"));
+            const treeData = anychart.data.tree(data, 'as-table');
+
+            const chart = anychart.ganttProject();
+            const chartTitle = chart.title();
+            chartTitle.enabled(true);
+            chartTitle.text(title);
+            chart.getTimeline().scale().zoomLevels([[
+                {unit: "year", count: 1}
+            ]]);
+            chart.container("container");
+            chart.data(treeData);
+            chart.draw();
+            chart.fitAll();
+
+            chart.saveAsPng({"filename": "My Chart PNG"});
+        });
+    </script>
 </body>
 </html>

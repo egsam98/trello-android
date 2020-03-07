@@ -146,7 +146,7 @@ class TasksFragment: Fragment(), NavigationView.OnNavigationItemSelectedListener
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.gantt_chart -> GanttChartActivity.start(activity, tasksViewModel.tasks)
+            R.id.gantt_chart -> GanttChartActivity.start(activity, selectedBoard, tasksViewModel.tasks)
             R.id.start_or_continue_videocall -> VideoCallActivity.start(activity, selectedBoard)
         }
         return true

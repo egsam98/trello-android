@@ -2,7 +2,6 @@ package com.project.trello_fintech.adapters
 
 import android.graphics.Paint
 import android.view.*
-import android.webkit.URLUtil
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.appcompat.widget.ActionMenuView
@@ -134,11 +133,10 @@ class ChecklistAdapter (
             this.checklistId = checklist.id
             this.checkitem = checkitem
 
-            if (URLUtil.isValidUrl(checkitem.title))
-                trelloUtil.parseTaskUrl(checkitem.title) { (id, text) ->
-                    textView.setupTaskCheckitem(id, text)
-                }
-            else
+            if (trelloUtil.isTaskURL(checkitem)) {
+                val (id, text) = trelloUtil.parseTaskUrl(checkitem.title)
+                textView.setupTaskCheckitem(id, text)
+            } else
                 textView.text = checkitem.title
 
             checkBox.isChecked = checkitem.isChecked

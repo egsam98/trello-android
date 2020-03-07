@@ -1,13 +1,17 @@
 package com.project.trello_fintech.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
+import android.os.Build
 import android.text.format.DateFormat
+import android.view.View
 import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,12 +21,11 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.WriteBatch
 import com.project.trello_fintech.Application
-import com.project.trello_fintech.R
-import java.lang.Exception
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
 import kotlin.random.Random
+import com.project.trello_fintech.R
 
 
 fun randomString(length: Int): String {
@@ -121,3 +124,19 @@ fun Resources.getVCSLogo(urlPath: String): Drawable? {
 
 fun <T> LiveData<T>.observe(owner: LifecycleOwner, func: (T) -> Unit) =
     observe(owner, androidx.lifecycle.Observer(func))
+
+@SuppressLint("ObsoleteSdkInt")
+fun FragmentActivity.hideSystemToolbar() {
+    val uiOptions = window.decorView.systemUiVisibility
+    var newUiOptions = uiOptions
+    if (Build.VERSION.SDK_INT >= 14) {
+        newUiOptions = newUiOptions xor View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    }
+    if (Build.VERSION.SDK_INT >= 16) {
+        newUiOptions = newUiOptions xor View.SYSTEM_UI_FLAG_FULLSCREEN
+    }
+    if (Build.VERSION.SDK_INT >= 18) {
+        newUiOptions = newUiOptions xor View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+    }
+    window.decorView.systemUiVisibility = newUiOptions
+}
