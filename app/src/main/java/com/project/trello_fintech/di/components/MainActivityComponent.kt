@@ -6,6 +6,7 @@ import com.project.trello_fintech.adapters.TasksAdapter
 import com.project.trello_fintech.di.modules.MainActivityModule
 import com.project.trello_fintech.di.scopes.MainActivityScope
 import com.project.trello_fintech.fragments.*
+import com.project.trello_fintech.fragments.dialogs.*
 import com.project.trello_fintech.views.TaskDetailSectionView
 import dagger.Subcomponent
 

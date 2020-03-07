@@ -1,4 +1,4 @@
-package com.project.trello_fintech.fragments
+package com.project.trello_fintech.fragments.dialogs
 
 import android.app.Dialog
 import android.os.Bundle

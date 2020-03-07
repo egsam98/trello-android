@@ -1,4 +1,4 @@
-package com.project.trello_fintech.fragments
+package com.project.trello_fintech.fragments.dialogs
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -26,7 +26,8 @@ class ParticipantsDialogFragment: DialogFragment() {
                 putString(TASK_ID_ARG, task.id)
                 putString(BOARD_ID_ARG, task.boardId)
             }
-            return ParticipantsDialogFragment().apply { arguments = bundle }
+            return ParticipantsDialogFragment()
+                .apply { arguments = bundle }
         }
     }
 

@@ -1,4 +1,4 @@
-package com.project.trello_fintech.fragments
+package com.project.trello_fintech.fragments.dialogs
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -33,7 +33,8 @@ class AddTaskDialogFragment: DialogFragment() {
         private const val COLUMN_ARG = "column"
         fun create(column: Column): AddTaskDialogFragment {
             val bundle = Bundle().apply { putSerializable(COLUMN_ARG, column) }
-            return AddTaskDialogFragment().apply { arguments = bundle }
+            return AddTaskDialogFragment()
+                .apply { arguments = bundle }
         }
     }
 

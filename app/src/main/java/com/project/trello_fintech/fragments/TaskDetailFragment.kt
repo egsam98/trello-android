@@ -23,6 +23,9 @@ import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.AttachmentsAdapter
 import com.project.trello_fintech.adapters.ChecklistsAdapter
 import com.project.trello_fintech.adapters.ParticipantsAdapter
+import com.project.trello_fintech.fragments.dialogs.CheckitemDialogFragment
+import com.project.trello_fintech.fragments.dialogs.ChecklistDialogFragment
+import com.project.trello_fintech.fragments.dialogs.ParticipantsDialogFragment
 import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.TrelloUtil

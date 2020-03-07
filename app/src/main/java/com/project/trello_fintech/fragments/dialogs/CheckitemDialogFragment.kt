@@ -1,4 +1,4 @@
-package com.project.trello_fintech.fragments
+package com.project.trello_fintech.fragments.dialogs
 
 import android.app.Dialog
 import android.os.Bundle
@@ -35,7 +35,8 @@ class CheckitemDialogFragment: DialogFragment() {
                     putString(CHECKITEM_TITLE_ARG, it.title)
                 }
             }
-            return CheckitemDialogFragment().apply { arguments = bundle }
+            return CheckitemDialogFragment()
+                .apply { arguments = bundle }
         }
     }
 
@@ -52,7 +53,9 @@ class CheckitemDialogFragment: DialogFragment() {
         MainActivity.component.inject(this)
 
         autoCompleteTextView = AutoCompleteTextView(context).apply {
-            val text = savedInstanceState?.getCharSequence(TEXT_STATE)?: arguments?.getString(CHECKITEM_TITLE_ARG)
+            val text = savedInstanceState?.getCharSequence(TEXT_STATE)?: arguments?.getString(
+                CHECKITEM_TITLE_ARG
+            )
             setText(text)
         }
 

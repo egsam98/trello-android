@@ -23,6 +23,7 @@ import javax.inject.Inject
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.GanttChartActivity
 import com.project.trello_fintech.activities.VideoCallActivity
+import com.project.trello_fintech.fragments.dialogs.AddTaskDialogFragment
 import com.project.trello_fintech.listeners.OnTaskSearchListener
 import com.project.trello_fintech.utils.TrelloUtil
 import com.project.trello_fintech.views.ClearableSearchView

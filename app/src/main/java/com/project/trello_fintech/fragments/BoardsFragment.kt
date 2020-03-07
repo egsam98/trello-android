@@ -15,6 +15,7 @@ import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.BoardsAdapter
+import com.project.trello_fintech.fragments.dialogs.AddBoardDialogFragment
 import com.project.trello_fintech.listeners.BoardTouchHelperCallback
 import com.project.trello_fintech.utils.isInternetAvailable
 import com.project.trello_fintech.view_models.BoardsViewModel
