@@ -25,4 +25,6 @@
     <string name="accept">Принять</string>
     <string name="decline">Отклонить</string>
     <string name="upload_attachment">Загрузить вложение</string>
+    <string name="deadline_date">Дата дедлайна</string>
+    <string name="deadline_time">Время дедлайна</string>
 </resources>

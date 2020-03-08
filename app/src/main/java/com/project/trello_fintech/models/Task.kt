@@ -3,9 +3,11 @@ package com.project.trello_fintech.models
 import android.text.Html
 import android.text.Spanned
 import com.google.gson.annotations.SerializedName
+import com.google.gson.internal.bind.util.ISO8601Utils
 import com.project.trello_fintech.utils.randomString
 import java.io.Serializable
 import java.lang.IllegalArgumentException
+import java.text.ParsePosition
 import java.util.*
 
 
@@ -28,10 +30,15 @@ data class Task(
     @SerializedName("pos") var trelloPos: String = "bottom"
     @SerializedName("desc") var description: String = ""
     @SerializedName("idBoard") val boardId: String = ""
-    @SerializedName("due") val dueDate: Date? = null
+    @SerializedName("due") private var formattedDueDate: String? = null
     @SerializedName("shortUrl") val shortUrl: String = ""
 
     var creationDate: Date = Date()
+    var dueDate: Date?
+        get() = formattedDueDate?.let { ISO8601Utils.parse(it, ParsePosition(0)) }
+        set(value) {
+            formattedDueDate = value?.toGMTString()
+        }
 
     var attachments: List<Attachment> = listOf()
 
