@@ -1,12 +1,15 @@
 package com.project.trello_fintech.utils
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Build
 import android.text.format.DateFormat
 import android.view.View
@@ -139,4 +142,21 @@ fun FragmentActivity.hideSystemToolbar() {
         newUiOptions = newUiOptions xor View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
     }
     window.decorView.systemUiVisibility = newUiOptions
+}
+
+fun openUrl(url: String) {
+    var validUrl = url
+    if (!url.contains("http")) {
+        validUrl = "http://$url"
+    }
+    val cxt = Application.component.context
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        data = Uri.parse(validUrl)
+    }
+    try {
+        cxt.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(cxt, "URL is not valid", Toast.LENGTH_LONG).show()
+    }
 }

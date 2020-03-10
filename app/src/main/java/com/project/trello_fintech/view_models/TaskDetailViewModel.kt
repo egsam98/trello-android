@@ -278,4 +278,8 @@ class TaskDetailViewModel(
         }
         clearOnDestroy(disposable)
     }
+
+    fun openVCSUrl() {
+        openUrl(firebaseData.vcsUrl.value.orEmpty())
+    }
 }
