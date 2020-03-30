@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.project.trello_fintech.api.RetrofitClient
 import com.project.trello_fintech.di.scopes.MainActivityScope
+import com.project.trello_fintech.services.AuthenticationService
 import com.project.trello_fintech.services.FirebaseService
 import com.project.trello_fintech.utils.TrelloUtil
 import com.project.trello_fintech.view_models.BoardsViewModel
@@ -26,6 +27,7 @@ class ViewModelFactory @Inject constructor(
     private val cxt: Context,
     private val retrofitClient: RetrofitClient,
     private val trelloUtil: TrelloUtil,
+    private val authService: AuthenticationService,
     private val firebaseService: FirebaseService): ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -34,7 +36,7 @@ class ViewModelFactory @Inject constructor(
             modelClass.isAssignableFrom(TasksViewModel::class.java) -> TasksViewModel(firebaseService, retrofitClient)
             modelClass.isAssignableFrom(UsersViewModel::class.java) -> UsersViewModel(retrofitClient)
             modelClass.isAssignableFrom(TaskDetailViewModel::class.java) ->
-                TaskDetailViewModel(cxt, retrofitClient, trelloUtil, firebaseService)
+                TaskDetailViewModel(cxt, retrofitClient, trelloUtil, firebaseService, authService)
             else -> throw IllegalArgumentException("Unregistered ViewModel $modelClass in ViewModelFactory")
         } as T
     }

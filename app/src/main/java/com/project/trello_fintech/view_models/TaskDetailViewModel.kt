@@ -15,13 +15,16 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.firestore.Query
 import java.io.IOException
 import java.io.InputStream
 import java.lang.IllegalArgumentException
 import com.project.trello_fintech.R
 import com.project.trello_fintech.api.*
 import com.project.trello_fintech.models.Checklist
+import com.project.trello_fintech.models.Comment
 import com.project.trello_fintech.models.User
+import com.project.trello_fintech.services.AuthenticationService
 import com.project.trello_fintech.services.FirebaseService
 import com.project.trello_fintech.utils.*
 import io.reactivex.Observable
@@ -31,9 +34,11 @@ import io.reactivex.functions.Function3
 /**
  * Доп. данные, получаемые из Firebase Firestore (не поддерживаются Trello API)
  * @property vcsUrl MutableLiveData<String>
+ * @property comments MutableLiveData<MutableList<Comment>>
  */
 class FirebaseData {
     val vcsUrl = MutableLiveData<String>()
+    val comments = MutableLiveData<MutableList<Comment>>()
 }
 
 /**
@@ -51,7 +56,6 @@ class FirebaseData {
  * @property onError LiveEvent<Pair<String, Int?>>
  * @property onAttachmentClick LiveEvent<Attachment>
  * @property onOpenHistory LiveEvent<Unit>
- * @property actionsTitle Array<String>
  * @property trelloUtil TrelloUtil
  * @property historyList MutableLiveData<List<History>>
  * @property isLoading MutableLiveData<Boolean>
@@ -63,7 +67,8 @@ class TaskDetailViewModel(
     private val cxt: Context,
     private val retrofitClient: RetrofitClient,
     private val trelloUtil: TrelloUtil,
-    private val firebaseService: FirebaseService): CleanableViewModel() {
+    private val firebaseService: FirebaseService,
+    private val authService: AuthenticationService): CleanableViewModel() {
 
     var task = MutableLiveData<Task>(Task())
     private val attachments = LiveList<Task.Attachment>()
@@ -106,6 +111,7 @@ class TaskDetailViewModel(
             .subscribe { this.task.value = task }
         loadFromFirebase(task)
         loadBoardBackground(task, boardBackgroundView)
+        loadComments(task)
         clearOnDestroy(disposable)
     }
 
@@ -281,5 +287,32 @@ class TaskDetailViewModel(
 
     fun openVCSUrl() {
         openUrl(firebaseData.vcsUrl.value.orEmpty())
+    }
+
+    private fun loadComments(task: Task) {
+        firebaseService.getTask(task) { document ->
+            document.reference.collection("comments")
+                .orderBy("date", Query.Direction.DESCENDING)
+                .addSnapshotListener { snapshot, exception ->
+                    exception?.let {
+                        onError.emit(it.message.orEmpty() to it.code.value())
+                        return@addSnapshotListener
+                    }
+                    firebaseData.comments.value = snapshot!!.toObjects(Comment::class.java)
+                }
+        }
+    }
+
+    fun addComment(text: String, onSuccess: (() -> Unit)? = null) {
+        if (text.isNotBlank()) {
+            val comment = Comment(authService.user, text)
+            firebaseService.getTask(task.value!!) {
+                it.reference.collection("comments").add(comment).addOnSuccessListener {
+                    onSuccess?.invoke()
+                }.addOnFailureListener { err ->
+                    onError.emit(err.message.orEmpty() to null)
+                }
+            }
+        }
     }
 }

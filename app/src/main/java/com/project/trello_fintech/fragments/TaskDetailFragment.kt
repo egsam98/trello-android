@@ -11,17 +11,18 @@ import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.*
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.textfield.TextInputEditText
 import com.project.trello_fintech.BR
 import com.project.trello_fintech.R
 import com.project.trello_fintech.activities.MainActivity
 import com.project.trello_fintech.adapters.AttachmentsAdapter
 import com.project.trello_fintech.adapters.ChecklistsAdapter
+import com.project.trello_fintech.adapters.CommentsAdapter
 import com.project.trello_fintech.adapters.ParticipantsAdapter
 import com.project.trello_fintech.fragments.dialogs.CheckitemDialogFragment
 import com.project.trello_fintech.fragments.dialogs.ChecklistDialogFragment
@@ -30,6 +31,7 @@ import com.project.trello_fintech.models.Checklist
 import com.project.trello_fintech.models.Task
 import com.project.trello_fintech.utils.TrelloUtil
 import com.project.trello_fintech.utils.getVCSLogo
+import com.project.trello_fintech.utils.observe
 import com.project.trello_fintech.utils.toDefaultFormat
 import com.project.trello_fintech.view_models.TaskDetailViewModel
 import com.project.trello_fintech.view_models.utils.CleanableViewModelProvider
@@ -140,12 +142,26 @@ class TaskDetailFragment: Fragment(), DrawerMenuOwner {
             adapter = participantsAdapter
         }
 
-        taskDetailViewModel.checklists.observe(viewLifecycleOwner, Observer {
+        val commentsAdapter = CommentsAdapter()
+        view.findViewById<RecyclerView>(R.id.comments).apply {
+            layoutManager = LinearLayoutManager(cxt)
+            adapter = commentsAdapter
+        }
+
+        val commentInputText = view.findViewById<TextInputEditText>(R.id.comment_input).text
+        view.findViewById<Button>(R.id.add_comment).setOnClickListener {
+            taskDetailViewModel.addComment(commentInputText.toString()) { commentInputText?.clear() }
+        }
+
+        taskDetailViewModel.checklists.observe(viewLifecycleOwner) {
             checklistsAdapter.data = it
-        })
-        taskDetailViewModel.participants.observe(viewLifecycleOwner, Observer {
+        }
+        taskDetailViewModel.participants.observe(viewLifecycleOwner) {
             participantsAdapter.data = it
-        })
+        }
+        taskDetailViewModel.firebaseData.comments.observe(viewLifecycleOwner) {
+            commentsAdapter.data = it
+        }
 
         activity.navigationView.setupMenu()
     }

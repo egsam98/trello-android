@@ -27,4 +27,7 @@
     <string name="upload_attachment">Загрузить вложение</string>
     <string name="deadline_date">Дата дедлайна</string>
     <string name="deadline_time">Время дедлайна</string>
+    <string name="comments">Комментарии</string>
+    <string name="comment_input_hint">Оставьте свой комментарий…</string>
+    <string name="send">Отправить</string>
 </resources>
